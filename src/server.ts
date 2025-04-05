@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv-safe';
+import receiveDocumentRoutes from './routes/receiveDocumentRoutes';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const documentTypeRoutes = require('./routes/documentTypeRoutes');
@@ -16,6 +17,8 @@ const APP = express();
 const PORT = process.env.PORT || 5000;
 
 APP.use('/document-types', documentTypeRoutes);
+APP.use('/receive-document', receiveDocumentRoutes);
+
 
 APP.get('/', (req, res) => {
 	res.json({ message: 'Hello from processing server!' });
