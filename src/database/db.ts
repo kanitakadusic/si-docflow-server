@@ -1,6 +1,8 @@
-import { Sequelize, DataTypes } from 'sequelize';
+import { DataTypes, Sequelize } from 'sequelize';
 import path from 'path';
 import dotenv from 'dotenv';
+
+const documentTypesModel = require(path.resolve(__dirname, './models/documentTypes.model'));
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -11,15 +13,13 @@ const connectionString: string = process.env.DATABASE_URL;
 
 const sequelize = new Sequelize(connectionString, {
 	dialect: 'postgres',
+	logging: false,
 });
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const documentTypeModel = require(path.resolve(__dirname, './models/DocumentType'));
-
 const db = {
-  Sequelize: Sequelize,
-  sequelize: sequelize,
-  documentType: documentTypeModel(sequelize, DataTypes)
-}
+	Sequelize: Sequelize,
+	sequelize: sequelize,
+	documentTypes: documentTypesModel(sequelize, DataTypes),
+};
 
 export default db;
