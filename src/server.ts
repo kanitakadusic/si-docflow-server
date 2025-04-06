@@ -1,15 +1,26 @@
 import express from 'express';
-import add from './example/math';
 import dotenv from 'dotenv-safe';
+import receiveDocumentRoutes from './routes/receiveDocumentRoutes';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const documentTypeRoutes = require('./routes/documentTypeRoutes');
+
+import db from './database/db'
+
+db.sequelize.authenticate().then(() => {
+	console.log("database ok");
+})
 
 dotenv.config();
 
 const APP = express();
 const PORT = process.env.PORT || 5000;
 
-console.log(add(2, 3));
+APP.use('/document-types', documentTypeRoutes);
+APP.use('/receive-document', receiveDocumentRoutes);
 
-APP.get('/api/message', (req, res) => {
+
+APP.get('/', (req, res) => {
 	res.json({ message: 'Hello from processing server!' });
 });
 

@@ -13,13 +13,21 @@
   "license": "ISC",
   "description": "Bringing new tools to your document workflow.",
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.2",
+    "pg": "^8.14.1",
+    "pg-hstore": "^2.3.4",
+    "reflect-metadata": "^0.2.2",
+    "sequelize": "^6.37.7",
+    "sequelize-typescript": "^2.1.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",
     "@types/dotenv-safe": "^8.1.6",
     "@types/express": "^5.0.1",
-    "@types/node": "^22.13.14",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.14.0",
+    "@types/validator": "^13.12.3",
     "dotenv-safe": "^9.1.0",
     "eslint": "^9.23.0",
     "prettier": "^3.5.3",
