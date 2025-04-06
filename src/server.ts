@@ -1,28 +1,20 @@
-import express from 'express';
 import dotenv from 'dotenv-safe';
-import receiveDocumentRoutes from './routes/receiveDocumentRoutes';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const documentTypeRoutes = require('./routes/documentTypeRoutes');
-
-import db from './database/db'
-
-db.sequelize.authenticate().then(() => {
-	console.log("database ok");
-})
+import express from 'express';
+import db from './database/db';
+import documentRoutes from './routes/document.routes';
+import documentTypesRoutes from './routes/documentTypes.routes';
 
 dotenv.config();
 
 const APP = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
-APP.use('/document-types', documentTypeRoutes);
-APP.use('/receive-document', receiveDocumentRoutes);
-
-
-APP.get('/', (req, res) => {
-	res.json({ message: 'Hello from processing server!' });
+db.sequelize.authenticate().then(() => {
+	console.log('Successfully connected to the database');
 });
+
+APP.use('/document', documentRoutes);
+APP.use('/document', documentTypesRoutes);
 
 APP.listen(PORT, () => {
 	console.log(`Server is running on http://localhost:${PORT}`);

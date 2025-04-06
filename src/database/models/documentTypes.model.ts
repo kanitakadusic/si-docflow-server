@@ -1,6 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 module.exports = function (sequelize: any, DataTypes: any) {
-	const DocumentType = sequelize.define(
+	return sequelize.define(
 		'document_types',
 		{
 			name: {
@@ -20,5 +19,4 @@ module.exports = function (sequelize: any, DataTypes: any) {
 			freezeTableName: true,
 		},
 	);
-	return DocumentType;
 };
