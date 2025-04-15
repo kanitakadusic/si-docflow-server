@@ -3,6 +3,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 
 const documentTypesModel = require(path.resolve(__dirname, './models/documentTypes.model'));
+const accessRightsModel = require(path.resolve(__dirname, './models/accessRights.model'));
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -20,6 +21,7 @@ const db = {
 	Sequelize: Sequelize,
 	sequelize: sequelize,
 	documentTypes: documentTypesModel(sequelize, DataTypes),
+	accessRights: accessRightsModel(sequelize, DataTypes),
 };
 
 export default db;
