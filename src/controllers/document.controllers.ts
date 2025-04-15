@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { extractData } from '../services/ocr.service';
 
 interface DocumentWithMetadataRequest extends Request {
     file?: Express.Multer.File;
@@ -21,17 +22,19 @@ export const postDocumentWithMetadata = async (
             res.status(400).json({ message: 'Document has not been uploaded' });
             return;
         }
-
         if (!user || !pc || !type) {
             res.status(400).json({ message: 'Metadata (user, pc, type) is missing' });
             return;
         }
 
-        // handle document and metadata
-        let fileName = file.originalname;
-        console.log({ fileName, user, pc, type });
+        let ocrResult = await extractData(file.buffer);
 
         res.status(200).json({
+            data: {
+                name: file.originalname,
+                type: type,
+                fields: ocrResult,
+            },
             message: 'Document and metadata have been successfully received',
         });
     } catch (error) {
