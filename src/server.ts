@@ -1,21 +1,26 @@
+import path from 'path';
 import dotenv from 'dotenv-safe';
 import express from 'express';
-import db from './database/db';
+import { sequelize } from './database/db';
 import documentRoutes from './routes/document.routes';
-import documentTypesRoutes from './routes/documentTypes.routes';
+import documentTypeRoutes from './routes/documentType.routes';
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+if (!process.env.PORT) {
+    throw new Error('PORT is not defined');
+}
+const PORT: string = process.env.PORT;
 
 const APP = express();
-const PORT = process.env.PORT;
 
-db.sequelize.authenticate().then(() => {
-	console.log('Successfully connected to the database');
+sequelize.authenticate().then(() => {
+    console.log('Successfully connected to the database');
 });
 
 APP.use('/document', documentRoutes);
-APP.use('/document', documentTypesRoutes);
+APP.use('/document', documentTypeRoutes);
 
 APP.listen(PORT, () => {
-	console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

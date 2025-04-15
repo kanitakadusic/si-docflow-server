@@ -8,9 +8,9 @@ This repository contains the processing server for a document processing system.
 
 The component diagram of the system is provided below.  
 
-![System architecture](systemArchitecture.png)
+![System architecture](documentation/systemArchitecture.png)
 
-## How To Use ⚙️
+## How to Use ⚙️
 
 To clone and run this application, you will need [Git](https://git-scm.com/) and [Node.js](https://nodejs.org/).
 
@@ -24,6 +24,6 @@ $ cd si-docflow-server
 # Install all dependencies
 $ npm install
 
-# Run the app in dev mode
+# Run the application
 $ npm run dev
 ```

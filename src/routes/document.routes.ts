@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import { postDocumentWithMetadata } from '../controllers/document.controllers';
-import { verifyToken } from '../middleware/verifyToken'; 
+import { verifyToken } from '../middleware/verifyToken';
 
 const ROUTER = express.Router();
 
