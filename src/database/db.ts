@@ -1,27 +1,23 @@
-import { DataTypes, Sequelize } from 'sequelize';
 import path from 'path';
 import dotenv from 'dotenv';
+import { Sequelize } from 'sequelize';
 
-const documentTypesModel = require(path.resolve(__dirname, './models/documentTypes.model'));
-const accessRightsModel = require(path.resolve(__dirname, './models/accessRights.model'));
+import { DocumentType } from './models/documentType.model';
+import { AccessRight } from './models/accessRight.model';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 if (!process.env.DATABASE_URL) {
-	throw new Error('DATABASE_URL is not defined');
+    throw new Error('DATABASE_URL is not defined');
 }
 const connectionString: string = process.env.DATABASE_URL;
 
 const sequelize = new Sequelize(connectionString, {
-	dialect: 'postgres',
-	logging: false,
+    dialect: 'postgres',
+    logging: false,
 });
 
-const db = {
-	Sequelize: Sequelize,
-	sequelize: sequelize,
-	documentTypes: documentTypesModel(sequelize, DataTypes),
-	accessRights: accessRightsModel(sequelize, DataTypes),
-};
+DocumentType.initialize(sequelize);
+AccessRight.initialize(sequelize);
 
-export default db;
+export { sequelize, DocumentType, AccessRight };
