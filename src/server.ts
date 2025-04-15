@@ -1,9 +1,11 @@
 import path from 'path';
 import dotenv from 'dotenv-safe';
 import express from 'express';
+
 import { sequelize } from './database/db';
 import documentRoutes from './routes/document.routes';
 import documentTypeRoutes from './routes/documentType.routes';
+import documentLayoutRoutes from './routes/documentLayout.routes';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
@@ -20,6 +22,7 @@ sequelize.authenticate().then(() => {
 
 APP.use('/document', documentRoutes);
 APP.use('/document', documentTypeRoutes);
+APP.use('/document', documentLayoutRoutes);
 
 APP.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

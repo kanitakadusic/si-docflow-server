@@ -4,6 +4,7 @@ import { Sequelize } from 'sequelize';
 
 import { DocumentType } from './models/documentType.model';
 import { AccessRight } from './models/accessRight.model';
+import { DocumentLayout } from './models/documentLayout.model';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -19,5 +20,6 @@ const sequelize = new Sequelize(connectionString, {
 
 DocumentType.initialize(sequelize);
 AccessRight.initialize(sequelize);
+DocumentLayout.initialize(sequelize);
 
-export { sequelize, DocumentType, AccessRight };
+export { sequelize, DocumentType, AccessRight, DocumentLayout };
