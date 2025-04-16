@@ -3,7 +3,7 @@ import dotenv from 'dotenv-safe';
 import express from 'express';
 
 import { sequelize } from './database/db';
-import documentRoutes from './routes/document.routes';
+import ocrRoutes from './routes/ocr.routes';
 import documentTypeRoutes from './routes/documentType.routes';
 import documentLayoutRoutes from './routes/documentLayout.routes';
 
@@ -20,7 +20,7 @@ sequelize.authenticate().then(() => {
     console.log('Successfully connected to the database');
 });
 
-APP.use('/document', documentRoutes);
+APP.use('/document', ocrRoutes);
 APP.use('/document', documentTypeRoutes);
 APP.use('/document', documentLayoutRoutes);
 

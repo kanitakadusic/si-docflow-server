@@ -1,5 +1,11 @@
 import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 
+export interface IField {
+    name: string;
+    upper_left: [number, number];
+    lower_right: [number, number];
+}
+
 interface IDocumentLayout {
     id: number;
     name: string;

@@ -1,8 +1,9 @@
 import express from 'express';
-import { getDocumentLayouts } from '../controllers/documentLayout.controllers';
+import { DocumentLayoutController } from '../controllers/documentLayout.controller';
 
-const ROUTER = express.Router();
+const router = express.Router();
+const documentLayoutController = new DocumentLayoutController();
 
-ROUTER.get('/layouts', getDocumentLayouts);
+router.get('/layouts', documentLayoutController.getAll.bind(documentLayoutController));
 
-export default ROUTER;
+export default router;

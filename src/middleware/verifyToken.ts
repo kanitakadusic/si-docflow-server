@@ -1,12 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import { AccessRight } from '../database/db';
+import { AccessRightService } from '../services/accessRight.service';
 
-export const verifyToken = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-): Promise<void> => {
+const accessRightService = new AccessRightService();
+
+export const verifyToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const token = req.headers.authorization;
         if (!token) {
@@ -14,10 +12,7 @@ export const verifyToken = async (
             return;
         }
 
-        const activeRecords = await AccessRight.findAll({
-            where: { is_active: true },
-            attributes: ['token'],
-        });
+        const activeRecords = await accessRightService.getAllActive();
 
         for (const activeRecord of activeRecords) {
             const isMatch = await bcrypt.compare(token, activeRecord.token);
