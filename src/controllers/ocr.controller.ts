@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { OcrService } from '../services/ocr.service';
-
+import { DocumentLayoutService } from '../services/documentLayout.service';
 interface DocumentWithMetadataRequest extends Request {
     file?: Express.Multer.File;
     body: {
@@ -12,6 +12,7 @@ interface DocumentWithMetadataRequest extends Request {
 
 export class OcrController {
     private readonly ocrService = new OcrService();
+    private readonly documentLayoutService = new DocumentLayoutService();
 
     async processDocument(req: DocumentWithMetadataRequest, res: Response): Promise<void> {
         try {
@@ -27,7 +28,7 @@ export class OcrController {
                 return;
             }
 
-            let ocrResult = await this.ocrService.extractFields(file.buffer, []);
+            const ocrResult = await this.ocrService.extractFields(file.buffer, file.mimetype, type);
 
             res.status(200).json({
                 data: ocrResult,

@@ -1,17 +1,40 @@
 [
   {
     "id": 1,
-    "name": "layout-1",
+    "name": "zahtjev za sufinanciranje",
     "fields": [
       {
-        "name": "name",
-        "upper_left": [5.3, 5.1],
-        "lower_right": [10.2, 10.6]
+        "name": "ime_prezime",
+        "upper_left": [
+          694,
+          809
+        ],
+        "lower_right": [
+          1516,
+          879
+        ]
       },
       {
-        "name": "birth",
-        "upper_left": [15.6, 15.2],
-        "lower_right": [20.1, 20.9]
+        "name": "jmbg",
+        "upper_left": [
+          694,
+          889
+        ],
+        "lower_right": [
+          1516,
+          957
+        ]
+      },
+      {
+        "name": "djelatnost",
+        "upper_left": [
+          694,
+          963
+        ],
+        "lower_right": [
+          1516,
+          1037
+        ]
       }
     ],
     "document_type": 1,

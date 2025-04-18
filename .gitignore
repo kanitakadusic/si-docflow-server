@@ -26,3 +26,6 @@ node_modules
 
 # OCR
 *.traineddata
+
+# debug - can be deleted
+ocr_outputs/*

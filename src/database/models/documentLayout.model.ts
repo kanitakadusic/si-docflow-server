@@ -9,7 +9,7 @@ export interface IField {
 interface IDocumentLayout {
     id: number;
     name: string;
-    fields: string;
+    fields: string;  // napraviti da se odmah string parsira u json i spasi kao IField, possibly?
     document_type: number;
     image_id: number;
     created_by: number;
