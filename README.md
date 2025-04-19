@@ -8,7 +8,7 @@ This repository contains the processing server for a document processing system.
 
 The component diagram of the system is provided below.  
 
-![System architecture](documentation/systemArchitecture.png)
+![System architecture](documentation/images/systemArchitecture.png)
 
 ## How to Use ⚙️
 
