@@ -1,8 +1,10 @@
 import express from 'express';
-import { getDocumentTypes } from '../controllers/documentType.controllers';
 
-const ROUTER = express.Router();
+import { DocumentTypeController } from '../controllers/documentType.controller.js';
 
-ROUTER.get('/types', getDocumentTypes);
+const router = express.Router();
+const documentTypeController = new DocumentTypeController();
 
-export default ROUTER;
+router.get('/types', documentTypeController.getAll.bind(documentTypeController));
+
+export default router;

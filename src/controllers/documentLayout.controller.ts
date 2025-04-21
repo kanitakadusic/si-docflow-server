@@ -1,0 +1,20 @@
+import { Request, Response } from 'express';
+
+import { DocumentLayoutService } from '../services/documentLayout.service.js';
+
+export class DocumentLayoutController {
+    private readonly documentLayoutService = new DocumentLayoutService();
+
+    async getAll(_: Request, res: Response): Promise<void> {
+        try {
+            const layouts = await this.documentLayoutService.getAll();
+            res.status(200).json({
+                data: layouts,
+                message: 'Document layouts have been successfully fetched',
+            });
+        } catch (error) {
+            console.error('Error fetching document layouts:', error);
+            res.status(500).json({ message: 'Server error while fetching document layouts' });
+        }
+    }
+}

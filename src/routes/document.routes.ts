@@ -1,12 +1,20 @@
 import express from 'express';
 import multer from 'multer';
-import { postDocumentWithMetadata } from '../controllers/document.controllers';
-import { verifyToken } from '../middleware/verifyToken';
 
-const ROUTER = express.Router();
+import { DocumentController } from '../controllers/document.controller.js';
+import { AuthMiddleware } from '../middleware/auth.middleware.js';
 
-const UPLOAD = multer({ storage: multer.memoryStorage() });
-ROUTER.post('/', UPLOAD.single('file'), postDocumentWithMetadata);
-ROUTER.post('/auth', verifyToken, UPLOAD.single('file'), postDocumentWithMetadata);
+const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
+const ocrController = new DocumentController();
+const authMiddleware = new AuthMiddleware();
 
-export default ROUTER;
+router.post('/', upload.single('file'), ocrController.process.bind(ocrController));
+router.post(
+    '/auth',
+    authMiddleware.verifyToken.bind(authMiddleware),
+    upload.single('file'),
+    ocrController.process.bind(ocrController),
+);
+
+export default router;
