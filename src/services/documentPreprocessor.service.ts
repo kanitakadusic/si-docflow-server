@@ -7,14 +7,14 @@ export class DocumentPreprocessorService {
     private readonly pdfMimeTypes: string[] = ['application/pdf'];
     private readonly imageMimeTypes: string[] = ['image/jpeg', 'image/png'];
 
-    private static readonly scanner = new jscanify();
-    private static openCVLoaded = false;
+    private readonly scanner = new jscanify();
+    private openCVLoaded: boolean = false;
 
-    static async initOpenCV(): Promise<void> {
-        if (!DocumentPreprocessorService.openCVLoaded) {
+    private async loadOpenCV(): Promise<void> {
+        if (!this.openCVLoaded) {
             await new Promise<void>((resolve) => {
-                DocumentPreprocessorService.scanner.loadOpenCV(() => {
-                    DocumentPreprocessorService.openCVLoaded = true;
+                this.scanner.loadOpenCV(() => {
+                    this.openCVLoaded = true;
                     resolve();
                 });
             });
@@ -43,10 +43,9 @@ export class DocumentPreprocessorService {
      * @returns PNG of the detected document
      */
     async extractDocumentFromPhoto(photo: Buffer, imageWidth: number, imageHeight: number): Promise<Buffer> {
+        await this.loadOpenCV();
         const imageForExtraction = await loadImage(photo);
-        return DocumentPreprocessorService.scanner
-            .extractPaper(imageForExtraction, imageWidth, imageHeight)
-            .toBuffer('image/png');
+        return this.scanner.extractPaper(imageForExtraction, imageWidth, imageHeight).toBuffer('image/png');
     }
 
     async prepareDocumentForOcr(

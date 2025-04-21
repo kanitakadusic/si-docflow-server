@@ -27,6 +27,7 @@ export class DocumentController {
         try {
             const { file } = req;
             const { user, pc, type } = req.body;
+            const { lang } = req.query;
 
             if (!file) {
                 res.status(400).json({ message: 'Document has not been uploaded' });
@@ -34,6 +35,10 @@ export class DocumentController {
             }
             if (!user || !pc || !type) {
                 res.status(400).json({ message: 'Metadata (user, pc, type) is missing' });
+                return;
+            }
+            if (!lang) {
+                res.status(400).json({ message: 'Language has not been specified' });
                 return;
             }
 
@@ -67,7 +72,7 @@ export class DocumentController {
 
             const fields: IField[] = JSON.parse(documentLayout.dataValues.fields);
 
-            const ocrResult = await this.ocrService.extractFields(preprocessedDocument, fields);
+            const ocrResult = await this.ocrService.extractFields(preprocessedDocument, fields, lang.toString());
 
             res.status(200).json({
                 data: ocrResult,

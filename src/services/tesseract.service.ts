@@ -1,26 +1,30 @@
 import { createWorker, ImageLike, Page, Worker } from 'tesseract.js';
 
 export class TesseractService {
-    private static worker: Worker | null = null;
+    private static readonly supportedLangCodes: string[] = ['bos', 'srp'];
 
-    static async createWorker(): Promise<void> {
-        if (!TesseractService.worker) {
-            TesseractService.worker = await createWorker(['bos', 'srp']);
+    private worker: Worker | null = null;
+
+    async createWorker(langCode: string): Promise<void> {
+        if (!TesseractService.supportedLangCodes.includes(langCode)) {
+            throw new Error(`Language code ${langCode} not supported`);
         }
+        await this.terminateWorker();
+        this.worker = await createWorker(langCode);
     }
 
-    static async terminateWorker(): Promise<void> {
-        if (TesseractService.worker) {
-            await TesseractService.worker.terminate();
-            TesseractService.worker = null;
+    async terminateWorker(): Promise<void> {
+        if (this.worker) {
+            await this.worker.terminate();
+            this.worker = null;
         }
     }
 
     async extract(image: ImageLike): Promise<Page> {
-        if (!TesseractService.worker) {
-            throw new Error('Tesseract worker not initialized');
+        if (!this.worker) {
+            throw new Error('Worker not created');
         }
-        const result = await TesseractService.worker.recognize(image);
+        const result = await this.worker.recognize(image);
         return result.data;
     }
 }

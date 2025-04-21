@@ -34,7 +34,8 @@ export class OcrService {
         return await this.getTesseractResult(image);
     }
 
-    async extractFields(image: Buffer, fields: IField[]): Promise<IMappedOcrResult[]> {
+    async extractFields(image: Buffer, fields: IField[], langCode: string): Promise<IMappedOcrResult[]> {
+        await this.tesseractService.createWorker(langCode);
         const result = [];
 
         for (const field of fields) {
@@ -57,6 +58,7 @@ export class OcrService {
             result.push({ field: field, ocrResult: ocrResult });
         }
 
+        await this.tesseractService.terminateWorker();
         return result;
     }
 }
