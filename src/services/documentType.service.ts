@@ -1,4 +1,4 @@
-import { DocumentType } from '../database/models/documentType.model';
+import { DocumentType } from '../database/models/documentType.model.js';
 
 export class DocumentTypeService {
     async getAll(): Promise<DocumentType[]> {

@@ -1,5 +1,6 @@
 import express from 'express';
-import { DocumentTypeController } from '../controllers/documentType.controller';
+
+import { DocumentTypeController } from '../controllers/documentType.controller.js';
 
 const router = express.Router();
 const documentTypeController = new DocumentTypeController();

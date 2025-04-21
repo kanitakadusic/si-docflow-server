@@ -1,30 +1,12 @@
-import { DocumentLayout } from '../database/db';
-
-// development
-import path from 'path';
-import fs from 'fs';
-
-async function readFile(): Promise<DocumentLayout[]> {
-    try {
-        const filePath = path.join(__dirname, 'document_layouts.json');
-        const rawData = await fs.promises.readFile(filePath, 'utf-8');
-        return JSON.parse(rawData);
-    } catch (error) {
-        console.error('Error reading JSON file:', error);
-        throw error;
-    }
-}
-// -----
+import { DocumentLayout } from '../database/db.js';
 
 export class DocumentLayoutService {
-    // development
-    async getAllTest(): Promise<DocumentLayout[]> {
-        return await readFile();
-    }
-    // -----
-
     async getAll(): Promise<DocumentLayout[]> {
         return await DocumentLayout.findAll();
+    }
+
+    async getAllByDocumentTypeId(id: number): Promise<DocumentLayout[]> {
+        return await DocumentLayout.findAll({ where: { document_type: id } });
     }
 
     async getById(id: number): Promise<DocumentLayout | null> {

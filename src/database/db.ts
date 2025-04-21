@@ -1,19 +1,13 @@
-import path from 'path';
-import dotenv from 'dotenv';
 import { Sequelize } from 'sequelize';
 
-import { DocumentType } from './models/documentType.model';
-import { AccessRight } from './models/accessRight.model';
-import { DocumentLayout } from './models/documentLayout.model';
+import { DATABASE_URL } from '../config.js';
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+import { DocumentType } from './models/documentType.model.js';
+import { AccessRight } from './models/accessRight.model.js';
+import { DocumentLayout } from './models/documentLayout.model.js';
+import { LayoutImage } from './models/layoutImage.model.js';
 
-if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL is not defined');
-}
-const connectionString: string = process.env.DATABASE_URL;
-
-const sequelize = new Sequelize(connectionString, {
+const sequelize: Sequelize = new Sequelize(DATABASE_URL, {
     dialect: 'postgres',
     logging: false,
 });
@@ -21,5 +15,6 @@ const sequelize = new Sequelize(connectionString, {
 DocumentType.initialize(sequelize);
 AccessRight.initialize(sequelize);
 DocumentLayout.initialize(sequelize);
+LayoutImage.initialize(sequelize);
 
-export { sequelize, DocumentType, AccessRight, DocumentLayout };
+export { sequelize, DocumentType, AccessRight, DocumentLayout, LayoutImage };

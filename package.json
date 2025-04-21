@@ -1,12 +1,12 @@
 {
   "name": "si-docflow-server",
+  "type": "module",
   "version": "1.0.0",
   "main": "src/server.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "ts-node src/server.ts"
+    "dev": "npm run build && npm run start"
   },
   "keywords": [],
   "author": "docflow",
@@ -18,14 +18,15 @@
     "express": "^4.21.2",
     "jscanify": "^1.4.0",
     "multer": "^1.4.5-lts.2",
-    "pdf-to-img": "^3.0.0",
+    "pdf-to-img": "^4.4.0",
     "pg": "^8.14.1",
     "pg-hstore": "^2.3.4",
     "reflect-metadata": "^0.2.2",
     "sequelize": "^6.37.7",
     "sequelize-typescript": "^2.1.6",
     "sharp": "^0.34.1",
-    "tesseract.js": "^6.0.1"
+    "tesseract.js": "^6.0.1",
+    "url": "^0.11.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",
@@ -39,7 +40,7 @@
     "eslint": "^9.23.0",
     "prettier": "^3.5.3",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.2",
+    "typescript": "^5.8.3",
     "typescript-eslint": "^8.28.0"
   }
 }

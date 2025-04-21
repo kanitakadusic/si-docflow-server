@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { DocumentTypeService } from '../services/documentType.service';
+
+import { DocumentTypeService } from '../services/documentType.service.js';
 
 export class DocumentTypeController {
     private readonly documentTypeService = new DocumentTypeService();

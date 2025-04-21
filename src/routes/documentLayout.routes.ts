@@ -1,5 +1,6 @@
 import express from 'express';
-import { DocumentLayoutController } from '../controllers/documentLayout.controller';
+
+import { DocumentLayoutController } from '../controllers/documentLayout.controller.js';
 
 const router = express.Router();
 const documentLayoutController = new DocumentLayoutController();

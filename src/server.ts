@@ -1,29 +1,30 @@
-import path from 'path';
-import dotenv from 'dotenv-safe';
 import express from 'express';
 
-import { sequelize } from './database/db';
-import ocrRoutes from './routes/ocr.routes';
-import documentTypeRoutes from './routes/documentType.routes';
-import documentLayoutRoutes from './routes/documentLayout.routes';
+import { PORT } from './config.js';
+import { bootstrap } from './bootstrap.js';
+import { shutdown } from './shutdown.js';
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+import ocrRoutes from './routes/document.routes.js';
+import documentTypeRoutes from './routes/documentType.routes.js';
+import documentLayoutRoutes from './routes/documentLayout.routes.js';
 
-if (!process.env.PORT) {
-    throw new Error('PORT is not defined');
-}
-const PORT: string = process.env.PORT;
+const app = express();
 
-const APP = express();
+app.use('/document', ocrRoutes);
+app.use('/document', documentTypeRoutes);
+app.use('/document', documentLayoutRoutes);
 
-sequelize.authenticate().then(() => {
-    console.log('Successfully connected to the database');
+// server initialization
+await bootstrap();
+
+app.listen(PORT);
+
+// server shutdown
+process.on('SIGINT', async (): Promise<never> => {
+    await shutdown();
+    process.exit(0);
 });
-
-APP.use('/document', ocrRoutes);
-APP.use('/document', documentTypeRoutes);
-APP.use('/document', documentLayoutRoutes);
-
-APP.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+process.on('SIGTERM', async (): Promise<never> => {
+    await shutdown();
+    process.exit(0);
 });

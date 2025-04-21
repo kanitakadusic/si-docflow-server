@@ -1,15 +1,33 @@
 import jscanify from 'jscanify';
 import sharp from 'sharp';
 import { loadImage } from 'canvas';
+import { pdf as pdfToImg } from 'pdf-to-img';
 
 export class DocumentPreprocessorService {
-    /*
-     * Returns all pdf pages as an array of image buffers
-     */
-    async pdfToPng(pdfAsBuffer: Buffer): Promise<Buffer[]> {
-        const { pdf } = await import('pdf-to-img');
-        const document = await pdf(pdfAsBuffer, { scale: 3 });
+    private readonly pdfMimeTypes: string[] = ['application/pdf'];
+    private readonly imageMimeTypes: string[] = ['image/jpeg', 'image/png'];
 
+    private static readonly scanner = new jscanify();
+    private static openCVLoaded = false;
+
+    static async initOpenCV(): Promise<void> {
+        if (!DocumentPreprocessorService.openCVLoaded) {
+            await new Promise<void>((resolve) => {
+                DocumentPreprocessorService.scanner.loadOpenCV(() => {
+                    DocumentPreprocessorService.openCVLoaded = true;
+                    resolve();
+                });
+            });
+        }
+    }
+
+    /**
+     * Converts PDF pages to an array of images
+     * @param pdf PDF of a document
+     * @returns images of PDF pages
+     */
+    async convertPdfToImg(pdf: Buffer): Promise<Buffer[]> {
+        const document = await pdfToImg(pdf, { scale: 3 });
         const images: Buffer[] = [];
         for await (const image of document) {
             images.push(image);
@@ -17,50 +35,47 @@ export class DocumentPreprocessorService {
         return images;
     }
 
-    private openCVloaded = false;
-    private async initOpenCV() {
-        return new Promise<void>((resolve) => {
-            const scanner = new jscanify();
-            scanner.loadOpenCV(() => {
-                console.log('OpenCV loaded');
-                this.openCVloaded = true;
-                resolve();
-            });
-        });
-    }
-    async extractDocumentFromImage(image: Buffer, image_width: number, image_height: number): Promise<Buffer> {
-        if(!this.openCVloaded) await this.initOpenCV();
-        const scanner = new jscanify();
-        const imageForExtraction = await loadImage(image);
-        return scanner.extractPaper(imageForExtraction, image_width, image_height).toBuffer('image/png');
+    /**
+     * Detects and crops a document from a photo
+     * @param photo photo containing a document
+     * @param imageWidth required image width
+     * @param imageHeight required image height
+     * @returns PNG of the detected document
+     */
+    async extractDocumentFromPhoto(photo: Buffer, imageWidth: number, imageHeight: number): Promise<Buffer> {
+        const imageForExtraction = await loadImage(photo);
+        return DocumentPreprocessorService.scanner
+            .extractPaper(imageForExtraction, imageWidth, imageHeight)
+            .toBuffer('image/png');
     }
 
     async prepareDocumentForOcr(
         document: Buffer,
         mimeType: string,
-        image_width: number,
-        image_height: number,
+        imageWidth: number,
+        imageHeight: number,
     ): Promise<Buffer> {
-        let preparedDocumentPng: Buffer;
-        if (mimeType == 'application/pdf') {
-            preparedDocumentPng = (await this.pdfToPng(document))[0]; //only first page of pdf
-        }
-        else {
-            image_height-=50; // offset because jscanify doesnt extract well and some background still remains
-            preparedDocumentPng = await this.extractDocumentFromImage(document, image_width, image_height);
+        let preparedDocument: Buffer;
+
+        if (this.pdfMimeTypes.includes(mimeType)) {
+            preparedDocument = (await this.convertPdfToImg(document))[0];
+        } else if (this.imageMimeTypes.includes(mimeType)) {
+            imageHeight -= 50; // offset because jscanify doesn't extract well and some background still remains
+            preparedDocument = await this.extractDocumentFromPhoto(document, imageWidth, imageHeight);
+        } else {
+            throw new Error(`MIME type ${mimeType} not supported`);
         }
 
         // image preprocessing for better OCR results
-        // if a lot of problems arise you can play with parameters or remove filters
-        // resize NEEDS to stay
-        preparedDocumentPng = await sharp(preparedDocumentPng)
+        // sharp expects integers
+        preparedDocument = await sharp(preparedDocument)
             .grayscale()
             .normalise()
-            .resize(image_width, image_height)
+            .resize(Math.round(imageWidth), Math.round(imageHeight))
             .threshold()
             .png()
             .toBuffer();
 
-        return preparedDocumentPng;
+        return preparedDocument;
     }
 }

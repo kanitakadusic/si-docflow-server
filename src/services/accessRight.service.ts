@@ -1,4 +1,4 @@
-import { AccessRight } from '../database/models/accessRight.model';
+import { AccessRight } from '../database/models/accessRight.model.js';
 
 export class AccessRightService {
     async getAll(): Promise<AccessRight[]> {
@@ -6,9 +6,7 @@ export class AccessRightService {
     }
 
     async getAllActive(): Promise<AccessRight[]> {
-        return await AccessRight.findAll({
-            where: { is_active: true },
-        });
+        return await AccessRight.findAll({ where: { is_active: true } });
     }
 
     async getById(id: number): Promise<AccessRight | null> {

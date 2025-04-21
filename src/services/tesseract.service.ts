@@ -1,17 +1,26 @@
-import tesseract, { ImageLike, Page } from 'tesseract.js';
+import { createWorker, ImageLike, Page, Worker } from 'tesseract.js';
 
 export class TesseractService {
-    // This way a worker is created only once for the whole runtime
-    private worker: tesseract.Worker | null = null;
+    private static worker: Worker | null = null;
 
-    private async initTesseractWorker() {
-        if(this.worker == null) {
-            this.worker = await tesseract.createWorker(['bos', 'srp']);
+    static async createWorker(): Promise<void> {
+        if (!TesseractService.worker) {
+            TesseractService.worker = await createWorker(['bos', 'srp']);
         }
     }
+
+    static async terminateWorker(): Promise<void> {
+        if (TesseractService.worker) {
+            await TesseractService.worker.terminate();
+            TesseractService.worker = null;
+        }
+    }
+
     async extract(image: ImageLike): Promise<Page> {
-        await this.initTesseractWorker();
-        const result = await this.worker!.recognize(image);
+        if (!TesseractService.worker) {
+            throw new Error('Tesseract worker not initialized');
+        }
+        const result = await TesseractService.worker.recognize(image);
         return result.data;
     }
 }

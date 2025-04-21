@@ -9,24 +9,21 @@ export interface IField {
 interface IDocumentLayout {
     id: number;
     name: string;
-    fields: string;  // napraviti da se odmah string parsira u json i spasi kao IField, possibly?
+    fields: string;
     document_type: number;
     image_id: number;
-    created_by: number;
+    created_by?: number;
 }
 
 type TDocumentLayout = Optional<IDocumentLayout, 'id'>;
 
-export class DocumentLayout
-    extends Model<IDocumentLayout, TDocumentLayout>
-    implements IDocumentLayout
-{
-    public id!: number;
-    public name!: string;
-    public fields!: string;
-    public document_type!: number;
-    public image_id!: number;
-    public created_by!: number;
+export class DocumentLayout extends Model<IDocumentLayout, TDocumentLayout> implements IDocumentLayout {
+    declare id: number;
+    declare name: string;
+    declare fields: string;
+    declare document_type: number;
+    declare image_id: number;
+    declare created_by?: number;
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -39,23 +36,28 @@ export class DocumentLayout
                 name: {
                     type: DataTypes.TEXT,
                     allowNull: false,
+                    unique: true,
                 },
                 fields: {
                     type: DataTypes.TEXT,
                     allowNull: false,
+                    get(): IField[] {
+                        const value = this.getDataValue('fields');
+                        return value ? JSON.parse(value) : [];
+                    },
+                    set(value: IField[]): void {
+                        this.setDataValue('fields', JSON.stringify(value));
+                    },
                 },
                 document_type: {
                     type: DataTypes.INTEGER,
                     allowNull: false,
+                    unique: true,
                 },
                 image_id: {
                     type: DataTypes.INTEGER,
                     allowNull: false,
                     unique: true,
-                },
-                created_by: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
                 },
             },
             {
