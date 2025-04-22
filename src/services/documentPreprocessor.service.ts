@@ -54,27 +54,23 @@ export class DocumentPreprocessorService {
         imageWidth: number,
         imageHeight: number,
     ): Promise<Buffer> {
-        let preparedDocument: Buffer;
-
         if (this.pdfMimeTypes.includes(mimeType)) {
-            preparedDocument = (await this.convertPdfToImg(document))[0];
+            document = (await this.convertPdfToImg(document))[0];
         } else if (this.imageMimeTypes.includes(mimeType)) {
-            imageHeight -= 50; // offset because jscanify doesn't extract well and some background still remains
-            preparedDocument = await this.extractDocumentFromPhoto(document, imageWidth, imageHeight);
+            document = await this.extractDocumentFromPhoto(document, imageWidth, imageHeight);
         } else {
             throw new Error(`MIME type ${mimeType} not supported`);
         }
 
         // image preprocessing for better OCR results
         // sharp expects integers
-        preparedDocument = await sharp(preparedDocument)
-            .grayscale()
-            .normalise()
-            .resize(Math.round(imageWidth), Math.round(imageHeight))
-            .threshold()
+        document = await sharp(document)
+            .resize(Math.round(imageWidth), Math.round(imageHeight), {
+                fit: 'fill',
+            })
             .png()
             .toBuffer();
 
-        return preparedDocument;
+        return document;
     }
 }
