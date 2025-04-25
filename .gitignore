@@ -29,3 +29,6 @@ node_modules
 
 # debug - can be deleted
 ocr_outputs/*
+
+# Service credentials
+google-credentials.json

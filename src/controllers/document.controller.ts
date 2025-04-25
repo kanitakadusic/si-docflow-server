@@ -27,8 +27,8 @@ export class DocumentController {
         try {
             const { file } = req;
             const { user, pc, type } = req.body;
-            const { lang } = req.query;
-
+            const { lang, engine } = req.query;
+    
             if (!file) {
                 res.status(400).json({ message: 'Document has not been uploaded' });
                 return;
@@ -41,42 +41,49 @@ export class DocumentController {
                 res.status(400).json({ message: 'Language has not been specified' });
                 return;
             }
-
+    
             const documentType = await this.documentTypeService.getByName(type);
             if (!documentType) {
                 res.status(404).json({ message: `Document type '${type}' is not available` });
                 return;
             }
-
-            const documentLayouts = await this.documentLayoutService.getAllByDocumentTypeId(documentType.dataValues.id);
+    
+            const documentLayouts = await this.documentLayoutService.getAllByDocumentTypeId(documentType.dataValues.name);
             if (!documentLayouts.length) {
                 res.status(404).json({ message: `Document layouts for document type '${type}' are not available` });
                 return;
             }
-
-            // check with the client and coordinate with admin dashboard dev team
+    
             const documentLayout = documentLayouts[0];
-
+    
             const layoutImage = await this.layoutImageService.getById(documentLayout.dataValues.image_id);
             if (!layoutImage) {
                 res.status(404).json({ message: `Layout image for document type '${type}' is not available` });
                 return;
             }
-
+    
             const preprocessedDocument: Buffer = await this.documentPreprocessorService.prepareDocumentForOcr(
                 file.buffer,
                 file.mimetype,
                 layoutImage.dataValues.width,
                 layoutImage.dataValues.height,
             );
-
+    
             const fields: IField[] = JSON.parse(documentLayout.dataValues.fields);
-
-            const ocrResult = await this.ocrService.extractFields(preprocessedDocument, fields, lang.toString());
-
+    
+            // ✨ Podrška za više OCR engine-a (npr. ?engine=google,tesseract)
+            const engines = (engine as string)?.split(',') || ['tesseract'];
+    
+            const results = await this.ocrService.extractFieldsMultiEngine(
+                engines,
+                preprocessedDocument,
+                fields,
+                lang.toString()
+            );
+    
             res.status(200).json({
-                data: ocrResult,
-                message: 'Document has been successfully processed',
+                data: results, // [{ service: 'google', data: [...] }, ...]
+                message: `Document has been successfully processed using: ${engines.join(', ')}`,
             });
         } catch (error) {
             console.error('Error processing document:', error);

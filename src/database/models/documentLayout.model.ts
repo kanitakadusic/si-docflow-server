@@ -10,7 +10,7 @@ interface IDocumentLayout {
     id: number;
     name: string;
     fields: string;
-    document_type: number;
+   // document_type: number;
     image_id: number;
     created_by?: number;
 }
@@ -49,11 +49,11 @@ export class DocumentLayout extends Model<IDocumentLayout, TDocumentLayout> impl
                         this.setDataValue('fields', JSON.stringify(value));
                     },
                 },
-                document_type: {
+              /*  document_type: {
                     type: DataTypes.INTEGER,
                     allowNull: false,
                     unique: true,
-                },
+                },*/
                 image_id: {
                     type: DataTypes.INTEGER,
                     allowNull: false,

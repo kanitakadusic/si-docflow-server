@@ -3,6 +3,9 @@ import sharp from 'sharp';
 import { TesseractService } from './tesseract.service.js';
 import { ImageLike } from 'tesseract.js';
 import { IField } from '../database/models/documentLayout.model.js';
+import { GoogleVisionService } from './googleVision.service.js';
+import { ChatGptOcrService } from './chatgpt.service.js';
+
 
 export interface IOcrResult {
     text: string;
@@ -16,49 +19,77 @@ export interface IMappedOcrResult {
 
 export class OcrService {
     private readonly tesseractService = new TesseractService();
-
-    private async getTesseractResult(image: ImageLike): Promise<IOcrResult> {
-        const result = await this.tesseractService.extract(image);
-        return {
-            text: result.text,
-            confidence: result.confidence,
-        };
-    }
+    private readonly googleService = new GoogleVisionService();
+    private readonly chatgptService = new ChatGptOcrService();
 
     /**
      * Extracts text from an image using multiple OCR services and returns the best result
      * @param image image to extract text from
      * @returns extracted text and confidence level
      */
-    async extract(image: Buffer): Promise<IOcrResult> {
-        return await this.getTesseractResult(image);
-    }
 
-    async extractFields(image: Buffer, fields: IField[], langCode: string): Promise<IMappedOcrResult[]> {
-        await this.tesseractService.createWorker(langCode);
-        const result = [];
-
+    private async extractFieldsWithEngine(
+        service: { extract(image: Buffer): Promise<IOcrResult> },
+        image: Buffer,
+        fields: IField[]
+    ): Promise<IMappedOcrResult[]> {
+        const result: IMappedOcrResult[] = [];
+    
         for (const field of fields) {
-            // sharp expects integers
-            field.upper_left[0] = Math.round(field.upper_left[0]);
-            field.upper_left[1] = Math.round(field.upper_left[1]);
-            field.lower_right[0] = Math.round(field.lower_right[0]);
-            field.lower_right[1] = Math.round(field.lower_right[1]);
-
-            const croppedPart = await sharp(image)
+            const cropped = await sharp(image)
                 .extract({
-                    left: field.upper_left[0],
-                    top: field.upper_left[1],
-                    width: field.lower_right[0] - field.upper_left[0],
-                    height: field.lower_right[1] - field.upper_left[1],
+                    left: Math.round(field.upper_left[0]),
+                    top: Math.round(field.upper_left[1]),
+                    width: Math.round(field.lower_right[0] - field.upper_left[0]),
+                    height: Math.round(field.lower_right[1] - field.upper_left[1]),
                 })
                 .png()
                 .toBuffer();
-            const ocrResult = await this.extract(croppedPart);
-            result.push({ field: field, ocrResult: ocrResult });
+    
+            const ocrResult = await service.extract(cropped);
+            result.push({ field, ocrResult });
         }
-
-        await this.tesseractService.terminateWorker();
+    
         return result;
     }
-}
+
+    async runEngine(
+        engine: string,
+        image: Buffer,
+        fields: IField[],
+        langCode: string
+    ): Promise<{ service: string; data: IMappedOcrResult[] }> {
+        
+            switch (engine) {
+                case 'tesseract':
+                    await this.tesseractService.createWorker(langCode);
+                    const tessData = await this.extractFieldsWithEngine(this.tesseractService, image, fields);
+                    await this.tesseractService.terminateWorker();
+                    return { service: 'tesseract', data: tessData };
+        
+                case 'google':
+                    const googleData = await this.extractFieldsWithEngine(this.googleService, image, fields);
+                    return { service: 'google', data: googleData };
+
+                case 'chatgpt':
+                    const gptData = await this.extractFieldsWithEngine(this.chatgptService, image, fields);
+                    return { service: 'chatgpt', data: gptData };
+                    
+                default:
+                    throw new Error(`Unsupported OCR engine: ${engine}`);
+            }
+    }
+    async extractFieldsMultiEngine(
+        engines: string[],
+        image: Buffer,
+        fields: IField[],
+        langCode: string
+    ): Promise<{ service: string; data: IMappedOcrResult[] }[]> {
+        const allResults = [];
+        for (const engine of engines) {
+            const result = await this.runEngine(engine, image, fields, langCode);
+            allResults.push(result);
+        }
+        return allResults;
+    }
+    }
