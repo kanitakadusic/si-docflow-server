@@ -25,3 +25,5 @@ function getEnvVariable(name: string): string {
 
 export const PORT: string = getEnvVariable('PORT');
 export const DATABASE_URL: string = getEnvVariable('DATABASE_URL');
+export const AI_MODEL_NAME: string = getEnvVariable('AI_MODEL_NAME');
+export const AI_MODEL_DOWNLOAD_URL:  string = getEnvVariable('AI_MODEL_DOWNLOAD_URL');

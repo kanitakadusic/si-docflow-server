@@ -48,14 +48,15 @@ export class DocumentController {
                 return;
             }
 
-            const documentLayouts = await this.documentLayoutService.getAllByDocumentTypeId(documentType.dataValues.id);
-            if (!documentLayouts.length) {
-                res.status(404).json({ message: `Document layouts for document type '${type}' are not available` });
+            if (!documentType.dataValues.document_layout_id) {
+                res.status(404).json({ message: `Document layout id for document type '${type}' is not available` });
                 return;
             }
-
-            // check with the client and coordinate with admin dashboard dev team
-            const documentLayout = documentLayouts[0];
+            const documentLayout = await this.documentLayoutService.getById(documentType.dataValues.document_layout_id);
+            if (!documentLayout) {
+                res.status(404).json({ message: `Document layout for document type '${type}' is not available` });
+                return;
+            }
 
             const layoutImage = await this.layoutImageService.getById(documentLayout.dataValues.image_id);
             if (!layoutImage) {
@@ -66,8 +67,8 @@ export class DocumentController {
             const preprocessedDocument: Buffer = await this.documentPreprocessorService.prepareDocumentForOcr(
                 file.buffer,
                 file.mimetype,
-                layoutImage.dataValues.width,
-                layoutImage.dataValues.height,
+                Math.round(layoutImage.dataValues.width), //does not work if width and height float numbers
+                Math.round(layoutImage.dataValues.height),
             );
 
             const fields: IField[] = JSON.parse(documentLayout.dataValues.fields);

@@ -5,9 +5,9 @@ export class DocumentLayoutService {
         return await DocumentLayout.findAll();
     }
 
-    async getAllByDocumentTypeId(id: number): Promise<DocumentLayout[]> {
+    /*async getAllByDocumentTypeId(id: number): Promise<DocumentLayout[]> {
         return await DocumentLayout.findAll({ where: { document_type: id } });
-    }
+    }*/
 
     async getById(id: number): Promise<DocumentLayout | null> {
         return await DocumentLayout.findByPk(id);
