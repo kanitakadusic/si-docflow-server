@@ -28,4 +28,4 @@ node_modules
 *.traineddata
 
 # debug
-debug
+debug/ocr_outputs
