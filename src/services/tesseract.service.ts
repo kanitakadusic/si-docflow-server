@@ -1,30 +1,32 @@
-import { createWorker, ImageLike, Page, Worker } from 'tesseract.js';
+import { createWorker, Worker } from 'tesseract.js';
 
-export class TesseractService {
-    private static readonly supportedLangCodes: string[] = ['bos', 'srp'];
+import { IOcrEngine, IOcrResult } from '../types/ocr.js';
 
+export class TesseractService implements IOcrEngine {
     private worker: Worker | null = null;
 
-    async createWorker(langCode: string): Promise<void> {
-        if (!TesseractService.supportedLangCodes.includes(langCode)) {
-            throw new Error(`Language code ${langCode} not supported`);
-        }
-        await this.terminateWorker();
+    async startup(langCode: string): Promise<void> {
+        await this.cleanup();
         this.worker = await createWorker(langCode);
     }
 
-    async terminateWorker(): Promise<void> {
+    async cleanup(): Promise<void> {
         if (this.worker) {
             await this.worker.terminate();
             this.worker = null;
         }
     }
 
-    async extract(image: ImageLike): Promise<Page> {
-        if (!this.worker) {
-            throw new Error('Worker not created');
+    async extract(image: Buffer): Promise<IOcrResult> {
+        const ocrResult: IOcrResult = {
+            text: '',
+            confidence: 0,
+        };
+        if (this.worker) {
+            const result = await this.worker.recognize(image);
+            ocrResult.text = result.data.text;
+            ocrResult.confidence = result.data.confidence;
         }
-        const result = await this.worker.recognize(image);
-        return result.data;
+        return ocrResult;
     }
 }

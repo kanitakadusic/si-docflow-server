@@ -11,13 +11,13 @@ try {
         path: path.resolve(__dirname, '../.env'),
     });
 } catch (_) {
-    console.error('🛑 Missing environment variable(s)');
+    console.error('Missing environment variable(s)');
     process.exit(1);
 }
 
 function getEnvVariable(name: string): string {
     if (!process.env[name]) {
-        console.error(`🛑 Environment variable ${name} is undefined`);
+        console.error(`Environment variable ${name} is undefined`);
         process.exit(1);
     }
     return process.env[name];
@@ -25,3 +25,10 @@ function getEnvVariable(name: string): string {
 
 export const PORT: string = getEnvVariable('PORT');
 export const DATABASE_URL: string = getEnvVariable('DATABASE_URL');
+
+export const OPENAI_API_KEY: string = getEnvVariable('OPENAI_API_KEY');
+
+export const AI_MODEL_NAME: string = getEnvVariable('AI_MODEL_NAME');
+export const AI_MODEL_DOWNLOAD_URL: string = getEnvVariable('AI_MODEL_DOWNLOAD_URL');
+
+export const ROOT: string = path.join(__dirname, '..');

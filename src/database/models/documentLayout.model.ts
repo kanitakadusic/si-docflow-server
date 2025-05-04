@@ -10,9 +10,9 @@ interface IDocumentLayout {
     id: number;
     name: string;
     fields: string;
-    document_type: number;
     image_id: number;
     created_by?: number;
+    updated_by?: number;
 }
 
 type TDocumentLayout = Optional<IDocumentLayout, 'id'>;
@@ -21,9 +21,9 @@ export class DocumentLayout extends Model<IDocumentLayout, TDocumentLayout> impl
     declare id: number;
     declare name: string;
     declare fields: string;
-    declare document_type: number;
     declare image_id: number;
     declare created_by?: number;
+    declare updated_by?: number;
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -48,11 +48,6 @@ export class DocumentLayout extends Model<IDocumentLayout, TDocumentLayout> impl
                     set(value: IField[]): void {
                         this.setDataValue('fields', JSON.stringify(value));
                     },
-                },
-                document_type: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
-                    unique: true,
                 },
                 image_id: {
                     type: DataTypes.INTEGER,

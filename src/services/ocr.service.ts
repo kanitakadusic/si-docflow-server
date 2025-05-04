@@ -1,64 +1,77 @@
 import sharp from 'sharp';
+// debug ->
+import path, { join } from 'path';
+import fs from 'fs';
 
-import { TesseractService } from './tesseract.service.js';
-import { ImageLike } from 'tesseract.js';
+import { ROOT } from '../config.js';
+// <- debug
 import { IField } from '../database/models/documentLayout.model.js';
-
-export interface IOcrResult {
-    text: string;
-    confidence: number;
-}
-
-export interface IMappedOcrResult {
-    field: IField;
-    ocrResult: IOcrResult;
-}
+import { IMappedOcrResult, IOcrEngine } from '../types/ocr.js';
+import { TesseractService } from './tesseract.service.js';
+import { GoogleVisionService } from './googleVision.service.js';
+import { ChatGptService } from './chatGpt.service.js';
 
 export class OcrService {
-    private readonly tesseractService = new TesseractService();
+    private readonly engines: Map<string, IOcrEngine> = new Map([
+        ['tesseract', new TesseractService()],
+        ['googleVision', new GoogleVisionService()],
+        ['chatGpt', new ChatGptService()],
+    ]);
 
-    private async getTesseractResult(image: ImageLike): Promise<IOcrResult> {
-        const result = await this.tesseractService.extract(image);
-        return {
-            text: result.text,
-            confidence: result.confidence,
+    async extractFields(image: Buffer, fields: IField[], engine: IOcrEngine): Promise<IMappedOcrResult[]> {
+        const result: IMappedOcrResult[] = [];
+
+        // debug ->
+        const sanitizeFieldName = function (str: string): string {
+            return str
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-zA-Z0-9]/g, '_')
+                .replace(/_+/g, '_')
+                .replace(/^_|_$/g, '')
+                .toLowerCase();
         };
-    }
 
-    /**
-     * Extracts text from an image using multiple OCR services and returns the best result
-     * @param image image to extract text from
-     * @returns extracted text and confidence level
-     */
-    async extract(image: Buffer): Promise<IOcrResult> {
-        return await this.getTesseractResult(image);
-    }
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const outputDir = path.join(ROOT, 'debug', 'ocr_outputs', timestamp);
+        fs.mkdirSync(outputDir, { recursive: true });
 
-    async extractFields(image: Buffer, fields: IField[], langCode: string): Promise<IMappedOcrResult[]> {
-        await this.tesseractService.createWorker(langCode);
-        const result = [];
+        fs.writeFileSync(join(outputDir, 'DOCUMENT.png'), image);
+        // <- debug
 
         for (const field of fields) {
-            // sharp expects integers
-            field.upper_left[0] = Math.round(field.upper_left[0]);
-            field.upper_left[1] = Math.round(field.upper_left[1]);
-            field.lower_right[0] = Math.round(field.lower_right[0]);
-            field.lower_right[1] = Math.round(field.lower_right[1]);
-
-            const croppedPart = await sharp(image)
+            const cropped = await sharp(image)
                 .extract({
-                    left: field.upper_left[0],
-                    top: field.upper_left[1],
-                    width: field.lower_right[0] - field.upper_left[0],
-                    height: field.lower_right[1] - field.upper_left[1],
+                    left: Math.round(field.upper_left[0]),
+                    top: Math.round(field.upper_left[1]),
+                    width: Math.round(field.lower_right[0] - field.upper_left[0]),
+                    height: Math.round(field.lower_right[1] - field.upper_left[1]),
                 })
                 .png()
                 .toBuffer();
-            const ocrResult = await this.extract(croppedPart);
-            result.push({ field: field, ocrResult: ocrResult });
+
+            // debug ->
+            const outputPath = path.join(outputDir, `${sanitizeFieldName(field.name)}.png`);
+            fs.writeFileSync(outputPath, cropped);
+            // <- debug
+
+            const ocrResult = await engine.extract(cropped);
+            result.push({ field, ocrResult });
         }
 
-        await this.tesseractService.terminateWorker();
+        return result;
+    }
+
+    async runOcr(image: Buffer, fields: IField[], engineName: string, langCode: string): Promise<IMappedOcrResult[]> {
+        const engine: IOcrEngine | undefined = this.engines.get(engineName);
+        if (!engine) {
+            throw new Error(`Unsupported OCR engine: ${engineName}`);
+        }
+
+        await engine.startup(langCode);
+        const result = await this.extractFields(image, fields, engine);
+        await engine.cleanup();
+
         return result;
     }
 }
