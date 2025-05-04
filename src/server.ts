@@ -1,21 +1,22 @@
-import dotenv from 'dotenv-safe';
 import express from 'express';
-import db from './database/db';
-import documentRoutes from './routes/document.routes';
-import documentTypesRoutes from './routes/documentTypes.routes';
 
-dotenv.config();
+import { PORT } from './config.js';
 
-const APP = express();
-const PORT = process.env.PORT;
+import { sequelize } from './database/db.js';
+import documentRoutes from './routes/document.routes.js';
+import documentTypeRoutes from './routes/documentType.routes.js';
+import documentLayoutRoutes from './routes/documentLayout.routes.js';
 
-db.sequelize.authenticate().then(() => {
-	console.log('Successfully connected to the database');
+sequelize.authenticate().then(() => {
+    console.log('Successfully connected to the database');
 });
 
-APP.use('/document', documentRoutes);
-APP.use('/document', documentTypesRoutes);
+const app = express();
 
-APP.listen(PORT, () => {
-	console.log(`Server is running on http://localhost:${PORT}`);
+app.use('/document', documentRoutes);
+app.use('/document', documentTypeRoutes);
+app.use('/document', documentLayoutRoutes);
+
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
