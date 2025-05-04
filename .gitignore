@@ -28,7 +28,7 @@ node_modules
 *.traineddata
 
 # debug
-debug/ocr_outputs
+debug
 
 # Credentials
 *-credentials.json

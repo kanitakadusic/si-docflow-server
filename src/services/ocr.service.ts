@@ -1,9 +1,9 @@
 import sharp from 'sharp';
 // debug ->
-import path, { join } from 'path';
-import fs from 'fs';
-
-import { ROOT } from '../config.js';
+// import path, { join } from 'path';
+// import fs from 'fs';
+//
+// import { ROOT } from '../config.js';
 // <- debug
 import { IField } from '../database/models/documentLayout.model.js';
 import { IMappedOcrResult, IOcrEngine } from '../types/ocr.js';
@@ -22,21 +22,21 @@ export class OcrService {
         const result: IMappedOcrResult[] = [];
 
         // debug ->
-        const sanitizeFieldName = function (str: string): string {
-            return str
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^a-zA-Z0-9]/g, '_')
-                .replace(/_+/g, '_')
-                .replace(/^_|_$/g, '')
-                .toLowerCase();
-        };
-
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const outputDir = path.join(ROOT, 'debug', 'ocr_outputs', timestamp);
-        fs.mkdirSync(outputDir, { recursive: true });
-
-        fs.writeFileSync(join(outputDir, 'DOCUMENT.png'), image);
+        // const sanitizeFieldName = function (str: string): string {
+        //     return str
+        //         .normalize('NFD')
+        //         .replace(/[\u0300-\u036f]/g, '')
+        //         .replace(/[^a-zA-Z0-9]/g, '_')
+        //         .replace(/_+/g, '_')
+        //         .replace(/^_|_$/g, '')
+        //         .toLowerCase();
+        // };
+        //
+        // const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        // const outputDir = path.join(ROOT, 'debug', 'ocr_outputs', timestamp);
+        // fs.mkdirSync(outputDir, { recursive: true });
+        //
+        // fs.writeFileSync(join(outputDir, 'DOCUMENT.png'), image);
         // <- debug
 
         for (const field of fields) {
@@ -51,8 +51,8 @@ export class OcrService {
                 .toBuffer();
 
             // debug ->
-            const outputPath = path.join(outputDir, `${sanitizeFieldName(field.name)}.png`);
-            fs.writeFileSync(outputPath, cropped);
+            // const outputPath = path.join(outputDir, `${sanitizeFieldName(field.name)}.png`);
+            // fs.writeFileSync(outputPath, cropped);
             // <- debug
 
             const ocrResult = await engine.extract(cropped);
