@@ -56,6 +56,10 @@ export class OcrService {
             // <- debug
 
             const ocrResult = await engine.extract(cropped);
+            if (!field.is_multiline) {
+                ocrResult.text = ocrResult.text.replace(/\n/g, '');
+            }
+
             result.push({ field, ocrResult });
         }
 
