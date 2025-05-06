@@ -27,7 +27,7 @@ export class DocumentController {
         try {
             const { file } = req;
             const { user, pc, type } = req.body;
-            const { lang } = req.query;
+            const { lang, engine } = req.query;
 
             if (!file) {
                 res.status(400).json({ message: 'Document has not been uploaded' });
@@ -48,14 +48,11 @@ export class DocumentController {
                 return;
             }
 
-            const documentLayouts = await this.documentLayoutService.getAllByDocumentTypeId(documentType.dataValues.id);
-            if (!documentLayouts.length) {
-                res.status(404).json({ message: `Document layouts for document type '${type}' are not available` });
+            const documentLayout = await this.documentLayoutService.getById(documentType.dataValues.document_layout_id);
+            if (!documentLayout) {
+                res.status(404).json({ message: `Document layout for document type '${type}' is not available` });
                 return;
             }
-
-            // check with the client and coordinate with admin dashboard dev team
-            const documentLayout = documentLayouts[0];
 
             const layoutImage = await this.layoutImageService.getById(documentLayout.dataValues.image_id);
             if (!layoutImage) {
@@ -66,16 +63,23 @@ export class DocumentController {
             const preprocessedDocument: Buffer = await this.documentPreprocessorService.prepareDocumentForOcr(
                 file.buffer,
                 file.mimetype,
-                layoutImage.dataValues.width,
-                layoutImage.dataValues.height,
+                Math.round(layoutImage.dataValues.width),
+                Math.round(layoutImage.dataValues.height),
             );
 
             const fields: IField[] = JSON.parse(documentLayout.dataValues.fields);
 
-            const ocrResult = await this.ocrService.extractFields(preprocessedDocument, fields, lang.toString());
+            // ?engines=tesseract,googleVision,chatGpt
+            const engines = (engine as string)?.split(',') || ['tesseract', 'googleVision', 'chatGpt'];
+            const results = [];
+
+            for (const engine of engines) {
+                const result = await this.ocrService.runOcr(preprocessedDocument, fields, engine, lang.toString());
+                results.push({ engine, result });
+            }
 
             res.status(200).json({
-                data: ocrResult,
+                data: results,
                 message: 'Document has been successfully processed',
             });
         } catch (error) {

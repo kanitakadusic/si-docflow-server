@@ -4,6 +4,7 @@ interface IDocumentType {
     id: number;
     name: string;
     description?: string;
+    document_layout_id: number;
     created_by?: number;
 }
 
@@ -13,6 +14,7 @@ export class DocumentType extends Model<IDocumentType, TDocumentType> implements
     declare id: number;
     declare name: string;
     declare description?: string;
+    declare document_layout_id: number;
     declare created_by?: number;
 
     public static initialize(sequelize: Sequelize) {
@@ -27,6 +29,18 @@ export class DocumentType extends Model<IDocumentType, TDocumentType> implements
                     type: DataTypes.STRING,
                     allowNull: false,
                     unique: true,
+                },
+                description: {
+                    type: DataTypes.TEXT,
+                    allowNull: true,
+                },
+                document_layout_id: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                    unique: true,
+                },
+                created_by: {
+                    type: DataTypes.INTEGER,
                 },
             },
             {
