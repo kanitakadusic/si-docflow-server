@@ -19,12 +19,12 @@ interface IDocumentLayout {
 type TDocumentLayout = Optional<IDocumentLayout, 'id'>;
 
 export class DocumentLayout extends Model<IDocumentLayout, TDocumentLayout> implements IDocumentLayout {
-    declare id: number;
-    declare name: string;
-    declare fields: string;
-    declare image_id: number;
-    declare created_by?: number;
-    declare updated_by?: number;
+    public id!: number;
+    public name!: string;
+    public fields!: string;
+    public image_id!: number;
+    public created_by?: number;
+    public updated_by?: number;
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -37,7 +37,6 @@ export class DocumentLayout extends Model<IDocumentLayout, TDocumentLayout> impl
                 name: {
                     type: DataTypes.TEXT,
                     allowNull: false,
-                    unique: true,
                 },
                 fields: {
                     type: DataTypes.TEXT,
@@ -54,6 +53,13 @@ export class DocumentLayout extends Model<IDocumentLayout, TDocumentLayout> impl
                     type: DataTypes.INTEGER,
                     allowNull: false,
                     unique: true,
+                },
+                created_by: {
+                    type: DataTypes.INTEGER,
+                },
+                updated_by: {
+                    type: DataTypes.INTEGER,
+                    allowNull: true,
                 },
             },
             {

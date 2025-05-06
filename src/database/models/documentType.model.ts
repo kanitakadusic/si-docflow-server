@@ -4,18 +4,18 @@ interface IDocumentType {
     id: number;
     name: string;
     description?: string;
-    document_layout_id: number;
+    document_layout_id?: number;
     created_by?: number;
 }
 
 type TDocumentType = Optional<IDocumentType, 'id'>;
 
 export class DocumentType extends Model<IDocumentType, TDocumentType> implements IDocumentType {
-    declare id: number;
-    declare name: string;
-    declare description?: string;
-    declare document_layout_id: number;
-    declare created_by?: number;
+    public id!: number;
+    public name!: string;
+    public description?: string;
+    public document_layout_id?: number;
+    public created_by?: number;
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -26,7 +26,7 @@ export class DocumentType extends Model<IDocumentType, TDocumentType> implements
                     primaryKey: true,
                 },
                 name: {
-                    type: DataTypes.STRING,
+                    type: DataTypes.TEXT,
                     allowNull: false,
                     unique: true,
                 },
@@ -36,7 +36,7 @@ export class DocumentType extends Model<IDocumentType, TDocumentType> implements
                 },
                 document_layout_id: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                     unique: true,
                 },
                 created_by: {

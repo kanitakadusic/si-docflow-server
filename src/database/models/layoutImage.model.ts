@@ -10,10 +10,10 @@ interface ILayoutImage {
 type TLayoutImage = Optional<ILayoutImage, 'id'>;
 
 export class LayoutImage extends Model<ILayoutImage, TLayoutImage> implements ILayoutImage {
-    declare id: number;
-    declare image: Buffer;
-    declare width: number;
-    declare height: number;
+    public id!: number;
+    public image!: Buffer;
+    public width!: number;
+    public height!: number;
 
     public static initialize(sequelize: Sequelize) {
         this.init(

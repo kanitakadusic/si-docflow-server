@@ -2,24 +2,24 @@ import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 
 interface IAccessRight {
     id: number;
-    name: string;
     token: string;
     is_active: boolean;
-    description?: string;
-    created_by?: number;
-    updated_by?: number;
+    name: string;
+    description: string;
+    created_by: number;
+    updated_by: number | null;
 }
 
 type TAccessRight = Optional<IAccessRight, 'id'>;
 
 export class AccessRight extends Model<IAccessRight, TAccessRight> implements IAccessRight {
-    declare id: number;
-    declare name: string;
-    declare token: string;
-    declare is_active: boolean;
-    declare description?: string;
-    declare created_by?: number;
-    declare updated_by?: number;
+    public id!: number;
+    public token!: string;
+    public is_active!: boolean;
+    public name!: string;
+    public description!: string;
+    public created_by!: number;
+    public updated_by!: number | null;
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -29,11 +29,6 @@ export class AccessRight extends Model<IAccessRight, TAccessRight> implements IA
                     autoIncrement: true,
                     primaryKey: true,
                 },
-                name: {
-                    type: DataTypes.TEXT,
-                    allowNull: false,
-                    unique: true,
-                },
                 token: {
                     type: DataTypes.TEXT,
                     allowNull: false,
@@ -42,6 +37,22 @@ export class AccessRight extends Model<IAccessRight, TAccessRight> implements IA
                 is_active: {
                     type: DataTypes.BOOLEAN,
                     allowNull: false,
+                },
+                name: {
+                    type: DataTypes.TEXT,
+                    allowNull: false,
+                },
+                description: {
+                    type: DataTypes.TEXT,
+                    allowNull: false,
+                },
+                created_by: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                },
+                updated_by: {
+                    type: DataTypes.INTEGER,
+                    allowNull: true,
                 },
             },
             {

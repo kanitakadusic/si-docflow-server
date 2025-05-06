@@ -48,6 +48,10 @@ export class DocumentController {
                 return;
             }
 
+            if (!documentType.dataValues.document_layout_id) {
+                res.status(404).json({ message: `Document layout for document type '${type}' is not available` });
+                return;
+            }
             const documentLayout = await this.documentLayoutService.getById(documentType.dataValues.document_layout_id);
             if (!documentLayout) {
                 res.status(404).json({ message: `Document layout for document type '${type}' is not available` });
