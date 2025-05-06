@@ -1,25 +1,13 @@
-import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
+import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
 
-interface IAccessRight {
-    id: number;
-    token: string;
-    is_active: boolean;
-    name: string;
-    description: string;
-    created_by: number;
-    updated_by: number | null;
-}
-
-type TAccessRight = Optional<IAccessRight, 'id'>;
-
-export class AccessRight extends Model<IAccessRight, TAccessRight> implements IAccessRight {
-    public id!: number;
-    public token!: string;
-    public is_active!: boolean;
-    public name!: string;
-    public description!: string;
-    public created_by!: number;
-    public updated_by!: number | null;
+export class AccessRight extends Model<InferAttributes<AccessRight>, InferCreationAttributes<AccessRight>> {
+    declare id: CreationOptional<number>;
+    declare token: string;
+    declare is_active: boolean;
+    declare name: string;
+    declare description: string | null;
+    declare created_by: number | null;
+    declare updated_by: number | null;
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -44,11 +32,11 @@ export class AccessRight extends Model<IAccessRight, TAccessRight> implements IA
                 },
                 description: {
                     type: DataTypes.TEXT,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,

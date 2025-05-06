@@ -1,25 +1,16 @@
-import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
+import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
 
-interface ILocalStorageFolder {
-    id: number;
-    title: string;
-    description: string;
-    path: string;
-    is_active: boolean;
-    created_by: number;
-    updated_by?: number;
-}
-
-type TLocalStorageFolder = Optional<ILocalStorageFolder, 'id'>;
-
-export class LocalStorageFolder extends Model<ILocalStorageFolder, TLocalStorageFolder> implements ILocalStorageFolder {
-    public id!: number;
-    public title!: string;
-    public description!: string;
-    public path!: string;
-    public is_active!: boolean;
-    public created_by!: number;
-    public updated_by?: number;
+export class LocalStorageFolder extends Model<
+    InferAttributes<LocalStorageFolder>,
+    InferCreationAttributes<LocalStorageFolder>
+> {
+    declare id: CreationOptional<number>;
+    declare title: string | null;
+    declare description: string | null;
+    declare path: string;
+    declare is_active: boolean;
+    declare created_by?: number | null;
+    declare updated_by?: number | null;
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -31,11 +22,11 @@ export class LocalStorageFolder extends Model<ILocalStorageFolder, TLocalStorage
                 },
                 title: {
                     type: DataTypes.STRING,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 description: {
                     type: DataTypes.STRING,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 path: {
                     type: DataTypes.STRING,
@@ -48,7 +39,7 @@ export class LocalStorageFolder extends Model<ILocalStorageFolder, TLocalStorage
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,

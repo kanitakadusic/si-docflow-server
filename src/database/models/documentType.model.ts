@@ -1,21 +1,11 @@
-import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
+import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
 
-interface IDocumentType {
-    id: number;
-    name: string;
-    description?: string;
-    document_layout_id?: number;
-    created_by?: number;
-}
-
-type TDocumentType = Optional<IDocumentType, 'id'>;
-
-export class DocumentType extends Model<IDocumentType, TDocumentType> implements IDocumentType {
-    public id!: number;
-    public name!: string;
-    public description?: string;
-    public document_layout_id?: number;
-    public created_by?: number;
+export class DocumentType extends Model<InferAttributes<DocumentType>, InferCreationAttributes<DocumentType>> {
+    declare id: CreationOptional<number>;
+    declare name: string;
+    declare description: string | null;
+    declare document_layout_id: number | null;
+    declare created_by: number | null;
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -41,6 +31,7 @@ export class DocumentType extends Model<IDocumentType, TDocumentType> implements
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
+                    allowNull: true,
                 },
             },
             {

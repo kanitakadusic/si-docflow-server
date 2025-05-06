@@ -1,26 +1,14 @@
-import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
+import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
 import { DocumentType } from './documentType.model.js';
 
-interface IProcessingRule {
-    id: number;
-    title: string;
-    description: string | null;
-    document_type_id: number;
-    is_active: boolean;
-    created_by: number;
-    updated_by?: number;
-}
-
-type TProcessingRule = Optional<IProcessingRule, 'id'>;
-
-export class ProcessingRule extends Model<IProcessingRule, TProcessingRule> implements IProcessingRule {
-    public id!: number;
-    public title!: string;
-    public description!: string | null;
-    public document_type_id!: number;
-    public is_active!: boolean;
-    public created_by!: number;
-    public updated_by?: number;
+export class ProcessingRule extends Model<InferAttributes<ProcessingRule>, InferCreationAttributes<ProcessingRule>> {
+    declare id: CreationOptional<number>;
+    declare title: string;
+    declare description: string | null;
+    declare document_type_id: number;
+    declare is_active: boolean;
+    declare created_by: number | null;
+    declare updated_by: number | null;
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -53,7 +41,7 @@ export class ProcessingRule extends Model<IProcessingRule, TProcessingRule> impl
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,

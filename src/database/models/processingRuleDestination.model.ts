@@ -1,32 +1,20 @@
-import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
+import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
 import { ProcessingRule } from './processingRule.model.js';
 import { LocalStorageFolder } from './localStorageFolder.model.js';
 import { ExternalApiEndpoint } from './externalApiEndpoint.model.js';
 import { ExternalFtpEndpoint } from './externalFtpEndpoint.model.js';
 
-interface IProcessingRuleDestination {
-    id: number;
-    processing_rule_id: number;
-    local_storage_folder_id?: number | null;
-    external_api_endpoint_id?: number | null;
-    external_ftp_endpoint_id?: number | null;
-    created_by: number;
-    updated_by?: number;
-}
-
-type TProcessingRuleDestination = Optional<IProcessingRuleDestination, 'id'>;
-
-export class ProcessingRuleDestination
-    extends Model<IProcessingRuleDestination, TProcessingRuleDestination>
-    implements IProcessingRuleDestination
-{
-    public id!: number;
-    public processing_rule_id!: number;
-    public local_storage_folder_id?: number | null;
-    public external_api_endpoint_id?: number | null;
-    public external_ftp_endpoint_id?: number | null;
-    public created_by!: number;
-    public updated_by?: number;
+export class ProcessingRuleDestination extends Model<
+    InferAttributes<ProcessingRuleDestination>,
+    InferCreationAttributes<ProcessingRuleDestination>
+> {
+    declare id: CreationOptional<number>;
+    declare processing_rule_id: number;
+    declare local_storage_folder_id: number | null;
+    declare external_api_endpoint_id: number | null;
+    declare external_ftp_endpoint_id: number | null;
+    declare created_by: number | null;
+    declare updated_by: number | null;
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -70,7 +58,7 @@ export class ProcessingRuleDestination
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,

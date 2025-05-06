@@ -1,36 +1,20 @@
-import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
+import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
 
-interface IExternalFtpEndpoint {
-    id: number;
-    title?: string;
-    description?: string;
-    host: string;
-    port: number;
-    username: string;
-    password: string;
-    secure: boolean;
-    path: string;
-    created_by: number;
-    updated_by?: number;
-}
-
-type TExternalFtpEndpoint = Optional<IExternalFtpEndpoint, 'id'>;
-
-export class ExternalFtpEndpoint
-    extends Model<IExternalFtpEndpoint, TExternalFtpEndpoint>
-    implements IExternalFtpEndpoint
-{
-    public id!: number;
-    public title?: string;
-    public description?: string;
-    public host!: string;
-    public port!: number;
-    public username!: string;
-    public password!: string;
-    public secure!: boolean;
-    public path!: string;
-    public created_by!: number;
-    public updated_by?: number;
+export class ExternalFtpEndpoint extends Model<
+    InferAttributes<ExternalFtpEndpoint>,
+    InferCreationAttributes<ExternalFtpEndpoint>
+> {
+    declare id: CreationOptional<number>;
+    declare title: string | null;
+    declare description: string | null;
+    declare host: string;
+    declare port: number;
+    declare username: string;
+    declare password: string;
+    declare secure: boolean;
+    declare path: string;
+    declare created_by: number | null;
+    declare updated_by: number | null;
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -78,7 +62,7 @@ export class ExternalFtpEndpoint
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,

@@ -1,47 +1,27 @@
-import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
+import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
 
 const authTypes = ['Basic', 'Bearer', 'API_Key', 'OAuth', 'None'] as const;
 type AuthType = (typeof authTypes)[number];
 
-interface IExternalApiEndpoint {
-    id: number;
-    title?: string;
-    description?: string;
-    is_active: boolean;
-    auth_type?: AuthType;
-    auth_credentials?: string;
-    method: string;
-    base_url: string;
-    route: string;
-    query_parameters?: string;
-    headers: string;
-    body?: string;
-    timeout_seconds: number;
-    created_by: number;
-    updated_by?: number;
-}
-
-type TExternalApiEndpoint = Optional<IExternalApiEndpoint, 'id'>;
-
-export class ExternalApiEndpoint
-    extends Model<IExternalApiEndpoint, TExternalApiEndpoint>
-    implements IExternalApiEndpoint
-{
-    public id!: number;
-    public title?: string;
-    public description?: string;
-    public is_active!: boolean;
-    public auth_type?: AuthType;
-    public auth_credentials?: string;
-    public method!: string;
-    public base_url!: string;
-    public route!: string;
-    public query_parameters?: string;
-    public headers!: string;
-    public body?: string;
-    public timeout_seconds!: number;
-    public created_by!: number;
-    public updated_by?: number;
+export class ExternalApiEndpoint extends Model<
+    InferAttributes<ExternalApiEndpoint>,
+    InferCreationAttributes<ExternalApiEndpoint>
+> {
+    declare id: CreationOptional<number>;
+    declare title: string | null;
+    declare description: string | null;
+    declare is_active: boolean;
+    declare auth_type: AuthType | null;
+    declare auth_credentials: string | null;
+    declare method: string;
+    declare base_url: string;
+    declare route: string;
+    declare query_parameters: string | null;
+    declare headers: string;
+    declare body: string | null;
+    declare timeout_seconds: number;
+    declare created_by: number | null;
+    declare updated_by: number | null;
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -101,7 +81,7 @@ export class ExternalApiEndpoint
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,

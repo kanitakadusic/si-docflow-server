@@ -1,19 +1,10 @@
-import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
+import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
 
-interface ILayoutImage {
-    id: number;
-    image: Buffer;
-    width: number;
-    height: number;
-}
-
-type TLayoutImage = Optional<ILayoutImage, 'id'>;
-
-export class LayoutImage extends Model<ILayoutImage, TLayoutImage> implements ILayoutImage {
-    public id!: number;
-    public image!: Buffer;
-    public width!: number;
-    public height!: number;
+export class LayoutImage extends Model<InferAttributes<LayoutImage>, InferCreationAttributes<LayoutImage>> {
+    declare id: CreationOptional<number>;
+    declare image: Buffer;
+    declare width: number;
+    declare height: number;
 
     public static initialize(sequelize: Sequelize) {
         this.init(

@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
+import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
 
 export interface IField {
     name: string;
@@ -7,24 +7,13 @@ export interface IField {
     is_multiline: boolean;
 }
 
-interface IDocumentLayout {
-    id: number;
-    name: string;
-    fields: string;
-    image_id: number;
-    created_by?: number;
-    updated_by?: number;
-}
-
-type TDocumentLayout = Optional<IDocumentLayout, 'id'>;
-
-export class DocumentLayout extends Model<IDocumentLayout, TDocumentLayout> implements IDocumentLayout {
-    public id!: number;
-    public name!: string;
-    public fields!: string;
-    public image_id!: number;
-    public created_by?: number;
-    public updated_by?: number;
+export class DocumentLayout extends Model<InferAttributes<DocumentLayout>, InferCreationAttributes<DocumentLayout>> {
+    declare id: CreationOptional<number>;
+    declare name: string;
+    declare fields: string;
+    declare image_id: number;
+    declare created_by: number | null;
+    declare updated_by: number | null;
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -56,6 +45,7 @@ export class DocumentLayout extends Model<IDocumentLayout, TDocumentLayout> impl
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
+                    allowNull: true,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,
