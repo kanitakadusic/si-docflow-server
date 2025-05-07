@@ -6,7 +6,7 @@ export class AccessRight extends Model<InferAttributes<AccessRight>, InferCreati
     declare is_active: boolean;
     declare name: string;
     declare description: string | null;
-    declare created_by: number | null;
+    declare created_by: number;
     declare updated_by: number | null;
 
     public static initialize(sequelize: Sequelize) {
@@ -36,7 +36,7 @@ export class AccessRight extends Model<InferAttributes<AccessRight>, InferCreati
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: true,
+                    allowNull: false,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,
@@ -50,4 +50,8 @@ export class AccessRight extends Model<InferAttributes<AccessRight>, InferCreati
             },
         );
     }
+
+    public static associate() {}
+
+    public static hook() {}
 }

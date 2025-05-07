@@ -1,4 +1,14 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
+import {
+    Association,
+    CreationOptional,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    NonAttribute,
+    Sequelize,
+} from 'sequelize';
+import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
 
 const authTypes = ['Basic', 'Bearer', 'API_Key', 'OAuth', 'None'] as const;
 type AuthType = (typeof authTypes)[number];
@@ -20,8 +30,14 @@ export class ExternalApiEndpoint extends Model<
     declare headers: string;
     declare body: string | null;
     declare timeout_seconds: number;
-    declare created_by: number | null;
+    declare created_by: number;
     declare updated_by: number | null;
+
+    declare processingRuleDestinations?: NonAttribute<ProcessingRuleDestination[]>;
+
+    declare static associations: {
+        processingRuleDestinations: Association<ExternalApiEndpoint, ProcessingRuleDestination>;
+    };
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -81,7 +97,7 @@ export class ExternalApiEndpoint extends Model<
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: true,
+                    allowNull: false,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,
@@ -95,4 +111,13 @@ export class ExternalApiEndpoint extends Model<
             },
         );
     }
+
+    public static associate() {
+        this.hasMany(ProcessingRuleDestination, {
+            foreignKey: 'external_api_endpoint_id',
+            as: 'processingRuleDestinations',
+        });
+    }
+
+    public static hook() {}
 }

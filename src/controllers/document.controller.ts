@@ -1,11 +1,9 @@
 import { Request, Response } from 'express';
 
 import { OcrService } from '../services/ocr.service.js';
-import { DocumentTypeService } from '../services/documentType.service.js';
-import { DocumentLayoutService } from '../services/documentLayout.service.js';
-import { LayoutImageService } from '../services/layoutImage.service.js';
 import { DocumentPreprocessorService } from '../services/documentPreprocessor.service.js';
 import { IField } from '../database/models/documentLayout.model.js';
+import { DocumentLayout, DocumentType, LayoutImage } from '../database/db.js';
 
 interface DocumentWithMetadataRequest extends Request {
     file?: Express.Multer.File;
@@ -18,16 +16,15 @@ interface DocumentWithMetadataRequest extends Request {
 
 export class DocumentController {
     private readonly ocrService = new OcrService();
-    private readonly documentTypeService = new DocumentTypeService();
-    private readonly documentLayoutService = new DocumentLayoutService();
-    private readonly layoutImageService = new LayoutImageService();
     private readonly documentPreprocessorService = new DocumentPreprocessorService();
 
     async process(req: DocumentWithMetadataRequest, res: Response): Promise<void> {
         try {
             const { file } = req;
             const { user, pc, type } = req.body;
-            const { lang, engine } = req.query;
+            // ?lang=bos
+            // ?engines=tesseract,googleVision,chatGpt
+            const { lang, engines } = req.query;
 
             if (!file) {
                 res.status(400).json({ message: 'Document has not been uploaded' });
@@ -41,24 +38,38 @@ export class DocumentController {
                 res.status(400).json({ message: 'Language has not been specified' });
                 return;
             }
+            if (!engines) {
+                res.status(400).json({ message: 'Engines have not been specified' });
+                return;
+            }
 
-            const documentType = await this.documentTypeService.getByName(type);
+            const documentType = await DocumentType.findOne({
+                where: { name: type },
+                include: [
+                    {
+                        model: DocumentLayout,
+                        as: 'documentLayout',
+                        include: [
+                            {
+                                model: LayoutImage,
+                                as: 'layoutImage',
+                            },
+                        ],
+                    },
+                ],
+            });
             if (!documentType) {
                 res.status(404).json({ message: `Document type '${type}' is not available` });
                 return;
             }
 
-            if (!documentType.dataValues.document_layout_id) {
-                res.status(404).json({ message: `Document layout for document type '${type}' is not available` });
-                return;
-            }
-            const documentLayout = await this.documentLayoutService.getById(documentType.dataValues.document_layout_id);
+            const documentLayout = documentType.documentLayout;
             if (!documentLayout) {
                 res.status(404).json({ message: `Document layout for document type '${type}' is not available` });
                 return;
             }
 
-            const layoutImage = await this.layoutImageService.getById(documentLayout.dataValues.image_id);
+            const layoutImage = documentLayout.layoutImage;
             if (!layoutImage) {
                 res.status(404).json({ message: `Layout image for document type '${type}' is not available` });
                 return;
@@ -71,15 +82,14 @@ export class DocumentController {
                 Math.round(layoutImage.dataValues.height),
             );
 
-            const fields: IField[] = JSON.parse(documentLayout.dataValues.fields);
+            const fields: IField[] = documentLayout.getFields();
 
-            // ?engines=tesseract,googleVision,chatGpt
-            const engines = (engine as string)?.split(',') || ['tesseract', 'googleVision', 'chatGpt'];
+            const ocrEngines: string[] = engines.toString().split(',');
             const results = [];
 
-            for (const engine of engines) {
-                const result = await this.ocrService.runOcr(preprocessedDocument, fields, engine, lang.toString());
-                results.push({ engine, result });
+            for (const ocrEngine of ocrEngines) {
+                const result = await this.ocrService.runOcr(preprocessedDocument, fields, ocrEngine, lang.toString());
+                results.push({ engine: ocrEngine, ocr: result });
             }
 
             res.status(200).json({

@@ -1,4 +1,14 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
+import {
+    Association,
+    CreationOptional,
+    DataTypes,
+    ForeignKey,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    NonAttribute,
+    Sequelize,
+} from 'sequelize';
 import { ProcessingRule } from './processingRule.model.js';
 import { LocalStorageFolder } from './localStorageFolder.model.js';
 import { ExternalApiEndpoint } from './externalApiEndpoint.model.js';
@@ -9,12 +19,24 @@ export class ProcessingRuleDestination extends Model<
     InferCreationAttributes<ProcessingRuleDestination>
 > {
     declare id: CreationOptional<number>;
-    declare processing_rule_id: number;
-    declare local_storage_folder_id: number | null;
-    declare external_api_endpoint_id: number | null;
-    declare external_ftp_endpoint_id: number | null;
-    declare created_by: number | null;
+    declare processing_rule_id: ForeignKey<ProcessingRule['id']>;
+    declare local_storage_folder_id: ForeignKey<LocalStorageFolder['id']>;
+    declare external_api_endpoint_id: ForeignKey<ExternalApiEndpoint['id']>;
+    declare external_ftp_endpoint_id: ForeignKey<ExternalFtpEndpoint['id']>;
+    declare created_by: number;
     declare updated_by: number | null;
+
+    declare processingRule?: NonAttribute<ProcessingRule>;
+    declare localStorageFolder?: NonAttribute<LocalStorageFolder>;
+    declare externalApiEndpoint?: NonAttribute<ExternalApiEndpoint>;
+    declare externalFtpEndpoint?: NonAttribute<ExternalFtpEndpoint>;
+
+    declare static associations: {
+        processingRule: Association<ProcessingRuleDestination, ProcessingRule>;
+        localStorageFolder: Association<ProcessingRuleDestination, LocalStorageFolder>;
+        externalApiEndpoint: Association<ProcessingRuleDestination, ExternalApiEndpoint>;
+        externalFtpEndpoint: Association<ProcessingRuleDestination, ExternalFtpEndpoint>;
+    };
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -27,38 +49,22 @@ export class ProcessingRuleDestination extends Model<
                 processing_rule_id: {
                     type: DataTypes.INTEGER,
                     allowNull: false,
-                    references: {
-                        model: ProcessingRule,
-                        key: 'id',
-                    },
                 },
                 local_storage_folder_id: {
                     type: DataTypes.INTEGER,
                     allowNull: true,
-                    references: {
-                        model: LocalStorageFolder,
-                        key: 'id',
-                    },
                 },
                 external_api_endpoint_id: {
                     type: DataTypes.INTEGER,
                     allowNull: true,
-                    references: {
-                        model: ExternalApiEndpoint,
-                        key: 'id',
-                    },
                 },
                 external_ftp_endpoint_id: {
                     type: DataTypes.INTEGER,
                     allowNull: true,
-                    references: {
-                        model: ExternalFtpEndpoint,
-                        key: 'id',
-                    },
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: true,
+                    allowNull: false,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,
@@ -87,4 +93,28 @@ export class ProcessingRuleDestination extends Model<
             },
         );
     }
+
+    public static associate() {
+        this.belongsTo(ProcessingRule, {
+            foreignKey: 'processing_rule_id',
+            as: 'processingRule',
+        });
+
+        this.belongsTo(LocalStorageFolder, {
+            foreignKey: 'local_storage_folder_id',
+            as: 'localStorageFolder',
+        });
+
+        this.belongsTo(ExternalApiEndpoint, {
+            foreignKey: 'external_api_endpoint_id',
+            as: 'externalApiEndpoint',
+        });
+
+        this.belongsTo(ExternalFtpEndpoint, {
+            foreignKey: 'external_ftp_endpoint_id',
+            as: 'externalFtpEndpoint',
+        });
+    }
+
+    public static hook() {}
 }

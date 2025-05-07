@@ -1,4 +1,14 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
+import {
+    Association,
+    CreationOptional,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    NonAttribute,
+    Sequelize,
+} from 'sequelize';
+import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
 
 export class ExternalFtpEndpoint extends Model<
     InferAttributes<ExternalFtpEndpoint>,
@@ -13,8 +23,14 @@ export class ExternalFtpEndpoint extends Model<
     declare password: string;
     declare secure: boolean;
     declare path: string;
-    declare created_by: number | null;
+    declare created_by: number;
     declare updated_by: number | null;
+
+    declare processingRuleDestinations?: NonAttribute<ProcessingRuleDestination[]>;
+
+    declare static associations: {
+        processingRuleDestinations: Association<ExternalFtpEndpoint, ProcessingRuleDestination>;
+    };
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -62,7 +78,7 @@ export class ExternalFtpEndpoint extends Model<
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: true,
+                    allowNull: false,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,
@@ -76,4 +92,13 @@ export class ExternalFtpEndpoint extends Model<
             },
         );
     }
+
+    public static associate() {
+        ExternalFtpEndpoint.hasMany(ProcessingRuleDestination, {
+            foreignKey: 'external_ftp_endpoint_id',
+            as: 'processingRuleDestinations',
+        });
+    }
+
+    public static hook() {}
 }

@@ -1,14 +1,33 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
+import {
+    Association,
+    CreationOptional,
+    DataTypes,
+    ForeignKey,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    NonAttribute,
+    Sequelize,
+} from 'sequelize';
 import { DocumentType } from './documentType.model.js';
+import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
 
 export class ProcessingRule extends Model<InferAttributes<ProcessingRule>, InferCreationAttributes<ProcessingRule>> {
     declare id: CreationOptional<number>;
     declare title: string;
     declare description: string | null;
-    declare document_type_id: number;
+    declare document_type_id: ForeignKey<DocumentType['id']>;
     declare is_active: boolean;
-    declare created_by: number | null;
+    declare created_by: number;
     declare updated_by: number | null;
+
+    declare documentType?: NonAttribute<DocumentType>;
+    declare processingRuleDestinations?: NonAttribute<ProcessingRuleDestination[]>;
+
+    declare static associations: {
+        documentType: Association<ProcessingRule, DocumentType>;
+        processingRuleDestinations: Association<ProcessingRule, ProcessingRuleDestination>;
+    };
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -29,10 +48,6 @@ export class ProcessingRule extends Model<InferAttributes<ProcessingRule>, Infer
                 document_type_id: {
                     type: DataTypes.INTEGER,
                     allowNull: false,
-                    references: {
-                        model: DocumentType,
-                        key: 'id',
-                    },
                 },
                 is_active: {
                     type: DataTypes.BOOLEAN,
@@ -41,7 +56,7 @@ export class ProcessingRule extends Model<InferAttributes<ProcessingRule>, Infer
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: true,
+                    allowNull: false,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,
@@ -55,4 +70,18 @@ export class ProcessingRule extends Model<InferAttributes<ProcessingRule>, Infer
             },
         );
     }
+
+    public static associate() {
+        this.belongsTo(DocumentType, {
+            foreignKey: 'document_type_id',
+            as: 'documentType',
+        });
+
+        this.hasMany(ProcessingRuleDestination, {
+            foreignKey: 'processing_rule_id',
+            as: 'processingRuleDestinations',
+        });
+    }
+
+    public static hook() {}
 }

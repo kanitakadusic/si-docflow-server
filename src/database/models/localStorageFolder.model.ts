@@ -1,4 +1,14 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
+import {
+    Association,
+    CreationOptional,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    NonAttribute,
+    Sequelize,
+} from 'sequelize';
+import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
 
 export class LocalStorageFolder extends Model<
     InferAttributes<LocalStorageFolder>,
@@ -9,8 +19,14 @@ export class LocalStorageFolder extends Model<
     declare description: string | null;
     declare path: string;
     declare is_active: boolean;
-    declare created_by?: number | null;
-    declare updated_by?: number | null;
+    declare created_by: number;
+    declare updated_by: number | null;
+
+    declare processingRuleDestinations?: NonAttribute<ProcessingRuleDestination[]>;
+
+    declare static associations: {
+        processingRuleDestinations: Association<LocalStorageFolder, ProcessingRuleDestination>;
+    };
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -39,7 +55,7 @@ export class LocalStorageFolder extends Model<
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: true,
+                    allowNull: false,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,
@@ -53,4 +69,13 @@ export class LocalStorageFolder extends Model<
             },
         );
     }
+
+    public static associate() {
+        this.hasMany(ProcessingRuleDestination, {
+            foreignKey: 'local_storage_folder_id',
+            as: 'processingRuleDestinations',
+        });
+    }
+
+    public static hook() {}
 }

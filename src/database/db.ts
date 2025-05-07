@@ -27,4 +27,24 @@ ExternalApiEndpoint.initialize(sequelize);
 ExternalFtpEndpoint.initialize(sequelize);
 ProcessingRuleDestination.initialize(sequelize);
 
+DocumentType.associate();
+AccessRight.associate();
+DocumentLayout.associate();
+LayoutImage.associate();
+ProcessingRule.associate();
+LocalStorageFolder.associate();
+ExternalApiEndpoint.associate();
+ExternalFtpEndpoint.associate();
+ProcessingRuleDestination.associate();
+
+DocumentType.hook();
+AccessRight.hook();
+DocumentLayout.hook();
+LayoutImage.hook();
+ProcessingRule.hook();
+LocalStorageFolder.hook();
+ExternalApiEndpoint.hook();
+ExternalFtpEndpoint.hook();
+ProcessingRuleDestination.hook();
+
 export { sequelize, DocumentType, AccessRight, DocumentLayout, LayoutImage };

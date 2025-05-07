@@ -60,7 +60,7 @@ export class OcrService {
                 ocrResult.text = ocrResult.text.replace(/\n/g, '');
             }
 
-            result.push({ field, ocrResult });
+            result.push({ field, result: ocrResult });
         }
 
         return result;

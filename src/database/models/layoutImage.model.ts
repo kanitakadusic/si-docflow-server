@@ -1,10 +1,26 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
+import {
+    Association,
+    CreationOptional,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    NonAttribute,
+    Sequelize,
+} from 'sequelize';
+import { DocumentLayout } from './documentLayout.model.js';
 
 export class LayoutImage extends Model<InferAttributes<LayoutImage>, InferCreationAttributes<LayoutImage>> {
     declare id: CreationOptional<number>;
     declare image: Buffer;
     declare width: number;
     declare height: number;
+
+    declare documentLayout?: NonAttribute<DocumentLayout>;
+
+    declare static associations: {
+        documentLayout: Association<LayoutImage, DocumentLayout>;
+    };
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -34,4 +50,13 @@ export class LayoutImage extends Model<InferAttributes<LayoutImage>, InferCreati
             },
         );
     }
+
+    public static associate() {
+        this.hasOne(DocumentLayout, {
+            foreignKey: 'image_id',
+            as: 'documentLayout',
+        });
+    }
+
+    public static hook() {}
 }

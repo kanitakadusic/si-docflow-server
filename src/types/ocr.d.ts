@@ -7,7 +7,7 @@ export interface IOcrResult {
 
 export interface IMappedOcrResult {
     field: IField;
-    ocrResult: IOcrResult;
+    result: IOcrResult;
 }
 
 export interface IOcrEngine {

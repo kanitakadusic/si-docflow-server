@@ -1,11 +1,32 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from 'sequelize';
+import {
+    Association,
+    CreationOptional,
+    DataTypes,
+    DestroyOptions,
+    ForeignKey,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    NonAttribute,
+    Sequelize,
+} from 'sequelize';
+import { DocumentLayout } from './documentLayout.model.js';
+import { ProcessingRule } from './processingRule.model.js';
 
 export class DocumentType extends Model<InferAttributes<DocumentType>, InferCreationAttributes<DocumentType>> {
     declare id: CreationOptional<number>;
     declare name: string;
     declare description: string | null;
-    declare document_layout_id: number | null;
-    declare created_by: number | null;
+    declare document_layout_id: ForeignKey<DocumentLayout['id']>;
+    declare created_by: number;
+
+    declare documentLayout?: NonAttribute<DocumentLayout>;
+    declare processingRules?: NonAttribute<ProcessingRule[]>;
+
+    declare static associations: {
+        documentLayout: Association<DocumentType, DocumentLayout>;
+        processingRules: Association<DocumentType, ProcessingRule>;
+    };
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -31,7 +52,7 @@ export class DocumentType extends Model<InferAttributes<DocumentType>, InferCrea
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: true,
+                    allowNull: false,
                 },
             },
             {
@@ -40,5 +61,30 @@ export class DocumentType extends Model<InferAttributes<DocumentType>, InferCrea
                 tableName: 'document_types',
             },
         );
+    }
+
+    public static associate() {
+        this.belongsTo(DocumentLayout, {
+            foreignKey: 'document_layout_id',
+            as: 'documentLayout',
+        });
+
+        this.hasMany(ProcessingRule, {
+            foreignKey: 'document_type_id',
+            as: 'processingRules',
+        });
+    }
+
+    public static hook() {
+        this.addHook('afterDestroy', async (type: DocumentType, options: DestroyOptions) => {
+            const layoutId: number | null = type.document_layout_id;
+            if (layoutId) {
+                await DocumentLayout.destroy({
+                    where: { id: layoutId },
+                    transaction: options.transaction,
+                    individualHooks: true,
+                });
+            }
+        });
     }
 }
