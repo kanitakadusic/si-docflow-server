@@ -120,4 +120,8 @@ export class ExternalApiEndpoint extends Model<
     }
 
     public static hook() {}
+
+    async send(data: object) {
+        console.log('Api');
+    }
 }

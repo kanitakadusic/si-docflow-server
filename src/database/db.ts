@@ -47,4 +47,15 @@ ExternalApiEndpoint.hook();
 ExternalFtpEndpoint.hook();
 ProcessingRuleDestination.hook();
 
-export { sequelize, DocumentType, AccessRight, DocumentLayout, LayoutImage };
+export {
+    sequelize,
+    DocumentType,
+    AccessRight,
+    DocumentLayout,
+    LayoutImage,
+    ProcessingRule,
+    LocalStorageFolder,
+    ExternalApiEndpoint,
+    ExternalFtpEndpoint,
+    ProcessingRuleDestination,
+};

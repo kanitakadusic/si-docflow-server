@@ -78,4 +78,8 @@ export class LocalStorageFolder extends Model<
     }
 
     public static hook() {}
+
+    async send(data: object) {
+        console.log('Storage');
+    }
 }

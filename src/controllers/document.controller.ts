@@ -1,9 +1,18 @@
 import { Request, Response } from 'express';
 
-import { OcrService } from '../services/ocr.service.js';
 import { DocumentPreprocessorService } from '../services/documentPreprocessor.service.js';
+import { OcrService } from '../services/ocr.service.js';
 import { IField } from '../database/models/documentLayout.model.js';
-import { DocumentLayout, DocumentType, LayoutImage } from '../database/db.js';
+import {
+    DocumentLayout,
+    DocumentType,
+    ExternalApiEndpoint,
+    ExternalFtpEndpoint,
+    LayoutImage,
+    LocalStorageFolder,
+    ProcessingRule,
+    ProcessingRuleDestination,
+} from '../database/db.js';
 
 interface DocumentWithMetadataRequest extends Request {
     file?: Express.Multer.File;
@@ -15,8 +24,8 @@ interface DocumentWithMetadataRequest extends Request {
 }
 
 export class DocumentController {
-    private readonly ocrService = new OcrService();
     private readonly documentPreprocessorService = new DocumentPreprocessorService();
+    private readonly ocrService = new OcrService();
 
     async process(req: DocumentWithMetadataRequest, res: Response): Promise<void> {
         try {
@@ -110,8 +119,65 @@ export class DocumentController {
     async finalize(req: Request, res: Response): Promise<void> {
         try {
             const data = req.body;
+
+            if (!data) {
+                res.status(400).json({ message: 'Data for finalization is missing' });
+                return;
+            }
+            if (!data.documentTypeId) {
+                res.status(400).json({ message: 'Document type has not been specified' });
+                return;
+            }
+
+            const processingRules = await ProcessingRule.findAll({
+                where: { document_type_id: data.documentTypeId },
+                include: [
+                    {
+                        model: ProcessingRuleDestination,
+                        as: 'processingRuleDestinations',
+                        include: [
+                            {
+                                model: LocalStorageFolder,
+                                as: 'localStorageFolder',
+                            },
+                            {
+                                model: ExternalApiEndpoint,
+                                as: 'externalApiEndpoint',
+                            },
+                            {
+                                model: ExternalFtpEndpoint,
+                                as: 'externalFtpEndpoint',
+                            },
+                        ],
+                    },
+                ],
+            });
+
+            const totals = {
+                total_storage_destinations: 0,
+                total_api_destinations: 0,
+                total_ftp_destinations: 0,
+            };
+
+            for (const rule of processingRules) {
+                if (rule.processingRuleDestinations) {
+                    for (const destination of rule.processingRuleDestinations) {
+                        if (destination.localStorageFolder) {
+                            totals.total_storage_destinations++;
+                            await destination.localStorageFolder.send(data);
+                        } else if (destination.externalApiEndpoint) {
+                            totals.total_api_destinations++;
+                            await destination.externalApiEndpoint.send(data);
+                        } else if (destination.externalFtpEndpoint) {
+                            totals.total_ftp_destinations++;
+                            await destination.externalFtpEndpoint.send(data);
+                        }
+                    }
+                }
+            }
+
             res.status(200).json({
-                data: data,
+                data: totals,
                 message: 'Document has been successfully finalized',
             });
         } catch (error) {
