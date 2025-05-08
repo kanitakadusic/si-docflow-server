@@ -8,6 +8,9 @@ import {
     NonAttribute,
     Sequelize,
 } from 'sequelize';
+import { Client } from 'basic-ftp';
+import { Readable } from 'stream';
+
 import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
 
 export class ExternalFtpEndpoint extends Model<
@@ -102,7 +105,29 @@ export class ExternalFtpEndpoint extends Model<
 
     public static hook() {}
 
-    async send(data: object) {
-        console.log('Ftp');
+    async send(jsonString: string): Promise<boolean> {
+        const client = new Client();
+        try {
+            await client.access({
+                host: this.host,
+                port: this.port,
+                user: this.username,
+                password: this.password,
+                secure: this.secure,
+            });
+
+            const buffer = Buffer.from(jsonString, 'utf-8');
+            const stream = Readable.from(buffer);
+            const filename = `${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+
+            await client.ensureDir(this.path);
+            await client.uploadFrom(stream, filename);
+            return true;
+        } catch (error) {
+            console.error('External FTP endpoint failure:', error);
+            return false;
+        } finally {
+            client.close();
+        }
     }
 }

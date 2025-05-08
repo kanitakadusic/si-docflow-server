@@ -15,6 +15,7 @@
   "dependencies": {
     "@google-cloud/vision": "^5.1.0",
     "@techstark/opencv-js": "^4.10.0-release.1",
+    "basic-ftp": "^5.0.5",
     "bcrypt": "^5.1.1",
     "canvas": "^3.1.0",
     "express": "^4.21.2",

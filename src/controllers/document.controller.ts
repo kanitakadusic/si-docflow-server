@@ -118,19 +118,19 @@ export class DocumentController {
 
     async finalize(req: Request, res: Response): Promise<void> {
         try {
-            const data = req.body;
+            const json = req.body;
 
-            if (!data) {
+            if (!json) {
                 res.status(400).json({ message: 'Data for finalization is missing' });
                 return;
             }
-            if (!data.documentTypeId) {
+            if (!json.documentTypeId) {
                 res.status(400).json({ message: 'Document type has not been specified' });
                 return;
             }
 
             const processingRules = await ProcessingRule.findAll({
-                where: { document_type_id: data.documentTypeId },
+                where: { document_type_id: json.documentTypeId },
                 include: [
                     {
                         model: ProcessingRuleDestination,
@@ -153,31 +153,44 @@ export class DocumentController {
                 ],
             });
 
-            const totals = {
-                total_storage_destinations: 0,
-                total_api_destinations: 0,
-                total_ftp_destinations: 0,
+            const logs: {
+                storages: { id: number; success: boolean }[];
+                apis: { id: number; success: boolean }[];
+                ftps: { id: number; success: boolean }[];
+            } = {
+                storages: [],
+                apis: [],
+                ftps: [],
             };
+            const jsonString = JSON.stringify(json, null, 2);
 
             for (const rule of processingRules) {
                 if (rule.processingRuleDestinations) {
                     for (const destination of rule.processingRuleDestinations) {
                         if (destination.localStorageFolder) {
-                            totals.total_storage_destinations++;
-                            await destination.localStorageFolder.send(data);
+                            logs.storages.push({
+                                id: destination.localStorageFolder.dataValues.id,
+                                success: true,
+                            });
+                            await destination.localStorageFolder.send(json);
                         } else if (destination.externalApiEndpoint) {
-                            totals.total_api_destinations++;
-                            await destination.externalApiEndpoint.send(data);
+                            logs.apis.push({
+                                id: destination.externalApiEndpoint.dataValues.id,
+                                success: true,
+                            });
+                            await destination.externalApiEndpoint.send(json);
                         } else if (destination.externalFtpEndpoint) {
-                            totals.total_ftp_destinations++;
-                            await destination.externalFtpEndpoint.send(data);
+                            logs.ftps.push({
+                                id: destination.externalFtpEndpoint.dataValues.id,
+                                success: await destination.externalFtpEndpoint.send(jsonString),
+                            });
                         }
                     }
                 }
             }
 
             res.status(200).json({
-                data: totals,
+                data: logs,
                 message: 'Document has been successfully finalized',
             });
         } catch (error) {
