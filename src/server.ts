@@ -12,6 +12,7 @@ sequelize.authenticate().then(() => {
 });
 
 const app = express();
+app.use(express.json());
 
 app.use('/document', documentRoutes);
 app.use('/document', documentTypeRoutes);
