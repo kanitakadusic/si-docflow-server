@@ -9,8 +9,8 @@ interface DocumentWithMetadataRequest extends Request {
     file?: Express.Multer.File;
     body: {
         user: string;
-        pc: string;
-        type: string;
+        machineId: string;
+        documentTypeId: string;
     };
 }
 
@@ -21,7 +21,7 @@ export class DocumentController {
     async process(req: DocumentWithMetadataRequest, res: Response): Promise<void> {
         try {
             const { file } = req;
-            const { user, pc, type } = req.body;
+            const { user, machineId, documentTypeId } = req.body;
             // ?lang=bos
             // ?engines=tesseract,googleVision,chatGpt
             const { lang, engines } = req.query;
@@ -30,8 +30,8 @@ export class DocumentController {
                 res.status(400).json({ message: 'Document has not been uploaded' });
                 return;
             }
-            if (!user || !pc || !type) {
-                res.status(400).json({ message: 'Metadata (user, pc, type) is missing' });
+            if (!user || !machineId || !documentTypeId) {
+                res.status(400).json({ message: 'Metadata (user, machine id, document type id) is missing' });
                 return;
             }
             if (!lang) {
@@ -43,8 +43,7 @@ export class DocumentController {
                 return;
             }
 
-            const documentType = await DocumentType.findOne({
-                where: { name: type },
+            const documentType = await DocumentType.findByPk(parseInt(documentTypeId, 10), {
                 include: [
                     {
                         model: DocumentLayout,
@@ -59,19 +58,23 @@ export class DocumentController {
                 ],
             });
             if (!documentType) {
-                res.status(404).json({ message: `Document type '${type}' is not available` });
+                res.status(404).json({ message: `Document type (${documentTypeId}) is not available` });
                 return;
             }
 
             const documentLayout = documentType.documentLayout;
             if (!documentLayout) {
-                res.status(404).json({ message: `Document layout for document type '${type}' is not available` });
+                res.status(404).json({
+                    message: `Document layout for document type (${documentTypeId}) is not available`,
+                });
                 return;
             }
 
             const layoutImage = documentLayout.layoutImage;
             if (!layoutImage) {
-                res.status(404).json({ message: `Layout image for document type '${type}' is not available` });
+                res.status(404).json({
+                    message: `Layout image for document type (${documentTypeId}) is not available`,
+                });
                 return;
             }
 
