@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 
 import { DocumentPreprocessorService } from '../services/documentPreprocessor.service.js';
 import { OcrService } from '../services/ocr.service.js';
-import { IField } from '../database/models/documentLayout.model.js';
+import { IField } from '../types/model.js';
 import {
     DocumentLayout,
     DocumentType,
@@ -124,13 +124,13 @@ export class DocumentController {
                 res.status(400).json({ message: 'Data for finalization is missing' });
                 return;
             }
-            if (!json.documentTypeId) {
+            if (!json.document_type_id) {
                 res.status(400).json({ message: 'Document type has not been specified' });
                 return;
             }
 
             const processingRules = await ProcessingRule.findAll({
-                where: { document_type_id: json.documentTypeId },
+                where: { document_type_id: json.document_type_id },
                 include: [
                     {
                         model: ProcessingRuleDestination,
@@ -153,38 +153,31 @@ export class DocumentController {
                 ],
             });
 
-            const logs: {
-                storages: { id: number; success: boolean }[];
-                apis: { id: number; success: boolean }[];
-                ftps: { id: number; success: boolean }[];
-            } = {
-                storages: [],
-                apis: [],
-                ftps: [],
+            const logs = {
+                storages: [] as { id: number; success: boolean }[],
+                apis: [] as { id: number; success: boolean }[],
+                ftps: [] as { id: number; success: boolean }[],
             };
-            const jsonString = JSON.stringify(json, null, 2);
 
             for (const rule of processingRules) {
-                if (rule.processingRuleDestinations) {
-                    for (const destination of rule.processingRuleDestinations) {
-                        if (destination.localStorageFolder) {
-                            logs.storages.push({
-                                id: destination.localStorageFolder.dataValues.id,
-                                success: true,
-                            });
-                            await destination.localStorageFolder.send(json);
-                        } else if (destination.externalApiEndpoint) {
-                            logs.apis.push({
-                                id: destination.externalApiEndpoint.dataValues.id,
-                                success: true,
-                            });
-                            await destination.externalApiEndpoint.send(json);
-                        } else if (destination.externalFtpEndpoint) {
-                            logs.ftps.push({
-                                id: destination.externalFtpEndpoint.dataValues.id,
-                                success: await destination.externalFtpEndpoint.send(jsonString),
-                            });
-                        }
+                if (!rule.processingRuleDestinations) continue;
+
+                for (const destination of rule.processingRuleDestinations) {
+                    if (destination.localStorageFolder) {
+                        logs.storages.push({
+                            id: destination.localStorageFolder.dataValues.id,
+                            success: await destination.localStorageFolder.send(json),
+                        });
+                    } else if (destination.externalApiEndpoint) {
+                        logs.apis.push({
+                            id: destination.externalApiEndpoint.dataValues.id,
+                            success: await destination.externalApiEndpoint.send(json),
+                        });
+                    } else if (destination.externalFtpEndpoint) {
+                        logs.ftps.push({
+                            id: destination.externalFtpEndpoint.dataValues.id,
+                            success: await destination.externalFtpEndpoint.send(json),
+                        });
                     }
                 }
             }

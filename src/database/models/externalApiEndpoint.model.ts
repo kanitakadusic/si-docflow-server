@@ -8,15 +8,18 @@ import {
     NonAttribute,
     Sequelize,
 } from 'sequelize';
+import axios from 'axios';
+
 import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
+import { IForwarder } from '../../types/model.js';
 
 const authTypes = ['Basic', 'Bearer', 'API_Key', 'OAuth', 'None'] as const;
 type AuthType = (typeof authTypes)[number];
 
-export class ExternalApiEndpoint extends Model<
-    InferAttributes<ExternalApiEndpoint>,
-    InferCreationAttributes<ExternalApiEndpoint>
-> {
+export class ExternalApiEndpoint
+    extends Model<InferAttributes<ExternalApiEndpoint>, InferCreationAttributes<ExternalApiEndpoint>>
+    implements IForwarder
+{
     declare id: CreationOptional<number>;
     declare title: string | null;
     declare description: string | null;
@@ -121,7 +124,28 @@ export class ExternalApiEndpoint extends Model<
 
     public static hook() {}
 
-    async send(data: object) {
-        console.log('Api');
+    async send(json: object): Promise<boolean> {
+        try {
+            const headers = this.headers ? JSON.parse(this.headers) : {};
+            if (!this.is_active || this.method !== 'POST' || headers['Content-Type'] !== 'application/json') {
+                return false;
+            }
+            const response = await axios.post(
+                this.base_url + this.route,
+                {
+                    metadata: this.body ? JSON.parse(this.body) : {},
+                    document: json,
+                },
+                {
+                    headers,
+                    params: this.query_parameters ? JSON.parse(this.query_parameters) : {},
+                    timeout: this.timeout_seconds * 1000,
+                },
+            );
+            return response.status === 200;
+        } catch (error) {
+            console.error('External API endpoint failure:', error);
+            return false;
+        }
     }
 }

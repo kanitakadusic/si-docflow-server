@@ -12,13 +12,7 @@ import {
 } from 'sequelize';
 import { DocumentType } from './documentType.model.js';
 import { LayoutImage } from './layoutImage.model.js';
-
-export interface IField {
-    name: string;
-    upper_left: [number, number];
-    lower_right: [number, number];
-    is_multiline: boolean;
-}
+import { IField } from '../../types/model.js';
 
 export class DocumentLayout extends Model<InferAttributes<DocumentLayout>, InferCreationAttributes<DocumentLayout>> {
     declare id: CreationOptional<number>;

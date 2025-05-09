@@ -12,11 +12,12 @@ import { Client } from 'basic-ftp';
 import { Readable } from 'stream';
 
 import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
+import { IForwarder } from '../../types/model.js';
 
-export class ExternalFtpEndpoint extends Model<
-    InferAttributes<ExternalFtpEndpoint>,
-    InferCreationAttributes<ExternalFtpEndpoint>
-> {
+export class ExternalFtpEndpoint
+    extends Model<InferAttributes<ExternalFtpEndpoint>, InferCreationAttributes<ExternalFtpEndpoint>>
+    implements IForwarder
+{
     declare id: CreationOptional<number>;
     declare title: string | null;
     declare description: string | null;
@@ -105,7 +106,7 @@ export class ExternalFtpEndpoint extends Model<
 
     public static hook() {}
 
-    async send(jsonString: string): Promise<boolean> {
+    async send(json: object): Promise<boolean> {
         const client = new Client();
         try {
             await client.access({
@@ -116,8 +117,7 @@ export class ExternalFtpEndpoint extends Model<
                 secure: this.secure,
             });
 
-            const buffer = Buffer.from(jsonString, 'utf-8');
-            const stream = Readable.from(buffer);
+            const stream = Readable.from(Buffer.from(JSON.stringify(json, null, 2), 'utf-8'));
             const filename = `${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
 
             await client.ensureDir(this.path);

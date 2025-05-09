@@ -9,11 +9,12 @@ import {
     Sequelize,
 } from 'sequelize';
 import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
+import { IForwarder } from '../../types/model.js';
 
-export class LocalStorageFolder extends Model<
-    InferAttributes<LocalStorageFolder>,
-    InferCreationAttributes<LocalStorageFolder>
-> {
+export class LocalStorageFolder
+    extends Model<InferAttributes<LocalStorageFolder>, InferCreationAttributes<LocalStorageFolder>>
+    implements IForwarder
+{
     declare id: CreationOptional<number>;
     declare title: string | null;
     declare description: string | null;
@@ -79,7 +80,8 @@ export class LocalStorageFolder extends Model<
 
     public static hook() {}
 
-    async send(data: object) {
-        console.log('Storage');
+    async send(json: object) {
+        console.log(json);
+        return false;
     }
 }

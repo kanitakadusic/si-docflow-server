@@ -5,7 +5,7 @@ import sharp from 'sharp';
 //
 // import { ROOT } from '../config.js';
 // <- debug
-import { IField } from '../database/models/documentLayout.model.js';
+import { IField } from '../types/model.js';
 import { IMappedOcrResult, IOcrEngine } from '../types/ocr.js';
 import { TesseractService } from './tesseract.service.js';
 import { GoogleVisionService } from './googleVision.service.js';
