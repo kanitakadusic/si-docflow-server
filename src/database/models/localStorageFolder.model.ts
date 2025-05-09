@@ -8,8 +8,10 @@ import {
     NonAttribute,
     Sequelize,
 } from 'sequelize';
+
 import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
 import { IForwarder } from '../../types/model.js';
+import { supabase } from '../supabaseClient.js';
 
 export class LocalStorageFolder
     extends Model<InferAttributes<LocalStorageFolder>, InferCreationAttributes<LocalStorageFolder>>
@@ -81,7 +83,24 @@ export class LocalStorageFolder
     public static hook() {}
 
     async send(json: object) {
-        console.log(json);
-        return false;
+        try {
+            const buffer = Buffer.from(JSON.stringify(json, null, 2), 'utf-8');
+            const filename = `${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+            const fullPath = `${this.path}/${filename}`;
+
+            const { error } = await supabase.storage.from('finalized-documents').upload(fullPath, buffer, {
+                contentType: 'application/json',
+            });
+
+            if (error) {
+                console.error('Local storage folder failure:', error);
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Local storage folder failure:', error);
+            return false;
+        }
     }
 }
