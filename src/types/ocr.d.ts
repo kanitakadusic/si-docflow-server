@@ -1,4 +1,4 @@
-import { IField } from '../database/models/documentLayout.model.js';
+import { IField } from './model.js';
 
 export interface IOcrResult {
     text: string;
