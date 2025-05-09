@@ -1,8 +1,8 @@
 import express from 'express';
 
-import { PORT } from './config.js';
+import { PORT } from './config/config.js';
 
-import { sequelize } from './database/db.js';
+import { sequelize } from './config/db.js';
 import documentRoutes from './routes/document.routes.js';
 import documentTypeRoutes from './routes/documentType.routes.js';
 import documentLayoutRoutes from './routes/documentLayout.routes.js';

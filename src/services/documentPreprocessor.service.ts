@@ -6,7 +6,7 @@ import { loadImage } from 'canvas';
 import { pdf as pdfToImg } from 'pdf-to-img';
 import { Downloader } from 'nodejs-file-downloader';
 
-import { AI_MODEL_DOWNLOAD_URL, AI_MODEL_NAME } from '../config.js';
+import { AI_MODEL_DOWNLOAD_URL, AI_MODEL_NAME } from '../config/config.js';
 
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -118,7 +118,7 @@ export class DocumentPreprocessorService {
                 .toBuffer();
         }
 
-        fs.writeFileSync(join(__dirname, '..', '..', 'ocr_outputs', fileName), buff);
+        fs.writeFileSync(join(__dirname, '..', '..', 'debug', 'ocr_outputs', fileName), buff);
     }
 
     private async padImageToMakeSquare(photo: Buffer, width: number, height: number): Promise<cv.Mat> {

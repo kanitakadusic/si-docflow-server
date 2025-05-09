@@ -12,7 +12,7 @@ import {
 } from 'sequelize';
 import { DocumentType } from './documentType.model.js';
 import { LayoutImage } from './layoutImage.model.js';
-import { IField } from '../../types/model.js';
+import { IField } from '../types/model.js';
 
 export class DocumentLayout extends Model<InferAttributes<DocumentLayout>, InferCreationAttributes<DocumentLayout>> {
     declare id: CreationOptional<number>;

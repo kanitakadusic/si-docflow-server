@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { DocumentType } from '../database/db.js';
+import { DocumentType } from '../config/db.js';
 
 export class DocumentTypeController {
     async getAll(_: Request, res: Response): Promise<void> {

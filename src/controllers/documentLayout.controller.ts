@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { DocumentLayout } from '../database/db.js';
+import { DocumentLayout } from '../config/db.js';
 
 export class DocumentLayoutController {
     async getAll(_: Request, res: Response): Promise<void> {

@@ -12,7 +12,7 @@ import { Client } from 'basic-ftp';
 import { Readable } from 'stream';
 
 import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
-import { IForwarder } from '../../types/model.js';
+import { IForwarder } from '../types/model.js';
 
 export class ExternalFtpEndpoint
     extends Model<InferAttributes<ExternalFtpEndpoint>, InferCreationAttributes<ExternalFtpEndpoint>>

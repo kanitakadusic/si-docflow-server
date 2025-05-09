@@ -10,8 +10,8 @@ import {
 } from 'sequelize';
 
 import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
-import { IForwarder } from '../../types/model.js';
-import { supabase } from '../supabaseClient.js';
+import { IForwarder } from '../types/model.js';
+import { supabase } from '../config/supabaseClient.js';
 
 export class LocalStorageFolder
     extends Model<InferAttributes<LocalStorageFolder>, InferCreationAttributes<LocalStorageFolder>>

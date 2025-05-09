@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 
-import { AccessRight } from '../database/db.js';
+import { AccessRight } from '../config/db.js';
 
 export class AuthMiddleware {
     async verifyToken(req: Request, res: Response, next: NextFunction): Promise<void> {

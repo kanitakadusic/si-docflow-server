@@ -12,7 +12,7 @@ import {
     LocalStorageFolder,
     ProcessingRule,
     ProcessingRuleDestination,
-} from '../database/db.js';
+} from '../config/db.js';
 
 interface DocumentWithMetadataRequest extends Request {
     file?: Express.Multer.File;

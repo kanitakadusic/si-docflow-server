@@ -11,7 +11,7 @@ import {
 import axios from 'axios';
 
 import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
-import { IForwarder } from '../../types/model.js';
+import { IForwarder } from '../types/model.js';
 
 const authTypes = ['Basic', 'Bearer', 'API_Key', 'OAuth', 'None'] as const;
 type AuthType = (typeof authTypes)[number];
