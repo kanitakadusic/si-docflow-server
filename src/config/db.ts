@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize';
 
-import { DATABASE_URL } from './config.js';
+import { DATABASE_URL } from './env.js';
 
 import { DocumentType } from '../models/documentType.model.js';
 import { AccessRight } from '../models/accessRight.model.js';

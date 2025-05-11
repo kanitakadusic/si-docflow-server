@@ -1,15 +1,10 @@
 import express from 'express';
 
-import { PORT } from './config/config.js';
+import { PORT } from './config/env.js';
 
-import { sequelize } from './config/db.js';
 import documentRoutes from './routes/document.routes.js';
 import documentTypeRoutes from './routes/documentType.routes.js';
 import documentLayoutRoutes from './routes/documentLayout.routes.js';
-
-sequelize.authenticate().then(() => {
-    console.log('Successfully connected to the database');
-});
 
 const app = express();
 app.use(express.json());

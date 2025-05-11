@@ -4,16 +4,11 @@ import sharp from 'sharp';
 import cv from '@techstark/opencv-js';
 import { loadImage } from 'canvas';
 import { pdf as pdfToImg } from 'pdf-to-img';
-import { Downloader } from 'nodejs-file-downloader';
-
-import { AI_MODEL_DOWNLOAD_URL, AI_MODEL_NAME } from '../config/config.js';
-
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import fs from 'fs';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { join } from 'path';
+// debug ->
+// import fs from 'fs';
+// <- debug
+import { AI_MODEL_NAME, ROOT } from '../config/env.js';
 
 export class DocumentPreprocessorService {
     private readonly pdfMimeTypes: string[] = ['application/pdf'];
@@ -58,68 +53,48 @@ export class DocumentPreprocessorService {
         return this.scanner.extractPaper(imageForExtraction, imageWidth, imageHeight).toBuffer('image/png');
     }
 
-    private async downloadAIModel(): Promise<void> {
-        if (!fs.existsSync(join(__dirname, 'ai_model'))) {
-            fs.mkdirSync(join(__dirname, 'ai_model'));
-        }
-
-        if (!fs.existsSync(join(__dirname, 'ai_model', AI_MODEL_NAME))) {
-            const downloader = new Downloader({
-                url: AI_MODEL_DOWNLOAD_URL,
-                directory: join(__dirname, 'ai_model'),
-                fileName: AI_MODEL_NAME,
-                onProgress: function (percentage) {
-                    console.log(`${percentage}%`);
-                },
-            });
-
-            console.log('Downloading ai model');
-            await downloader.download();
-        }
-    }
-
-    async getAIModel(): Promise<ort.InferenceSession> {
+    async getAiModel(): Promise<ort.InferenceSession> {
         if (!this.aiModel) {
-            await this.downloadAIModel();
-            this.aiModel = await ort.InferenceSession.create(join(__dirname, 'ai_model', AI_MODEL_NAME));
+            this.aiModel = await ort.InferenceSession.create(join(ROOT, 'ai_model', AI_MODEL_NAME));
         }
         return this.aiModel;
     }
 
-    // convenience function for debugging
-    private async saveImage(
-        mat: cv.Mat,
-        fileName: string,
-        width: number,
-        height: number,
-        channels: number,
-    ): Promise<void> {
-        let buff = Buffer.alloc(0);
-        if (channels == 3) {
-            buff = await sharp(mat.data, {
-                raw: {
-                    width: width,
-                    height: height,
-                    channels: 3,
-                },
-            })
-                .png()
-                .toBuffer();
-        } else if (channels == 1) {
-            buff = await sharp(mat.data, {
-                raw: {
-                    width: width,
-                    height: height,
-                    channels: 1,
-                },
-            })
-                .grayscale()
-                .png()
-                .toBuffer();
-        }
-
-        fs.writeFileSync(join(__dirname, '..', '..', 'debug', 'ocr_outputs', fileName), buff);
-    }
+    // debug ->
+    // private async saveImage(
+    //     mat: cv.Mat,
+    //     fileName: string,
+    //     width: number,
+    //     height: number,
+    //     channels: number,
+    // ): Promise<void> {
+    //     let buff = Buffer.alloc(0);
+    //     if (channels == 3) {
+    //         buff = await sharp(mat.data, {
+    //             raw: {
+    //                 width: width,
+    //                 height: height,
+    //                 channels: 3,
+    //             },
+    //         })
+    //             .png()
+    //             .toBuffer();
+    //     } else if (channels == 1) {
+    //         buff = await sharp(mat.data, {
+    //             raw: {
+    //                 width: width,
+    //                 height: height,
+    //                 channels: 1,
+    //             },
+    //         })
+    //             .grayscale()
+    //             .png()
+    //             .toBuffer();
+    //     }
+    //
+    //     fs.writeFileSync(join(ROOT, 'debug', 'ocr_outputs', fileName), buff);
+    // }
+    // <- debug
 
     private async padImageToMakeSquare(photo: Buffer, width: number, height: number): Promise<cv.Mat> {
         const mat = cv.matFromArray(height, width, cv.CV_8UC3, photo);
@@ -160,16 +135,16 @@ export class DocumentPreprocessorService {
     }
 
     /**
-     * Returns Tensor with 3 channels with size inputSize x inputSize such that
-     * one channel contains all the color data. All the channel values are
-     * normalized.
+     * Returns Tensor with 3 channels with size inputSize x inputSize
+     * such that one channel contains all the color data.
+     * All the channel values are normalized.
      *
-     * for example channel 1 = BBBBBB, channel 2 = GGGGGG, channel 3 = RRRRRR
+     * For example: channel 1 = BBBBBB, channel 2 = GGGGGG, channel 3 = RRRRRR
      *
      * @param mat - Image to make into tensor
      * @param inputSize
      */
-    private getAITensorInput(mat: cv.Mat, inputSize: number): ort.Tensor {
+    private getAiTensorInput(mat: cv.Mat, inputSize: number): ort.Tensor {
         const pixelArray = mat.data;
         const tensorData = new Float32Array(3 * inputSize * inputSize);
 
@@ -187,12 +162,11 @@ export class DocumentPreprocessorService {
 
     /**
      * Returns coordinate of center of polygon with the largest area inside image
-     *
      * @param mat grayscale image as float32
      * @param threshold pixels with values lower than threshold will be treated as 0
      */
     private getCentroidOfMaxContour(mat: cv.Mat, threshold: number = 0.3): cv.Point {
-        // binarization, for better contour finding
+        // binarization for better contour finding
         mat.data32F.set(
             mat.data32F.map((val) => {
                 if (val < threshold) return 0;
@@ -251,7 +225,7 @@ export class DocumentPreprocessorService {
         cv.warpPerspective(src, dst, perspectiveTransform, dSize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
     }
 
-    async extractDocumentFromPhotoWithAI(
+    async extractDocumentFromPhotoWithAi(
         photo: Buffer,
         imageWidth: number,
         imageHeight: number,
@@ -260,7 +234,7 @@ export class DocumentPreprocessorService {
         const originalWidth = metadata.width!;
         const originalHeight = metadata.height!;
 
-        //we need raw buffer for opencv to work
+        // raw buffer for opencv to work
         photo = await sharp(photo).removeAlpha().png().raw().toBuffer();
 
         let mat = await this.padImageToMakeSquare(photo, originalWidth, originalHeight);
@@ -271,18 +245,17 @@ export class DocumentPreprocessorService {
         const aiModelInputSize = 256;
         cv.resize(mat, mat, new cv.Size(aiModelInputSize, aiModelInputSize));
 
-        const tensor = this.getAITensorInput(mat, aiModelInputSize);
+        const tensor = this.getAiTensorInput(mat, aiModelInputSize);
 
-        const aiModel = await this.getAIModel();
+        const aiModel = await this.getAiModel();
         const result = await aiModel.run({ img: tensor });
         if (result['heatmap'].dims[1] != 4) {
             // could not find 4 corners
             return null;
         }
-        /*
-            heatmap has the following shape where c1 means corner1 data
-            c1c1c1c1...c2c2c2c2...c3c3c3c3...c4c4c4c4
-        */
+
+        // heatmap has the following shape where c1 means corner1 data
+        // c1c1c1c1...c2c2c2c2...c3c3c3c3...c4c4c4c4
         const heatmap = (await result['heatmap'].getData()) as Float32Array;
         const documentCorners = [];
         const numberOfCorners = 4;
@@ -324,7 +297,7 @@ export class DocumentPreprocessorService {
      * @returns PNG of the detected document
      */
     async extractDocumentFromPhoto(photo: Buffer, imageWidth: number, imageHeight: number): Promise<Buffer> {
-        let extractedDocument = await this.extractDocumentFromPhotoWithAI(photo, imageWidth, imageHeight);
+        let extractedDocument = await this.extractDocumentFromPhotoWithAi(photo, imageWidth, imageHeight);
         if (!extractedDocument) {
             // for redundancy jscanify is used if AI fails
             extractedDocument = await this.extractDocumentFromPhotoWithImgProcessing(photo, imageWidth, imageHeight);
