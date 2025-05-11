@@ -154,9 +154,9 @@ export class DocumentController {
             });
 
             const logs = {
-                storages: [] as { id: number; success: boolean }[],
-                apis: [] as { id: number; success: boolean }[],
-                ftps: [] as { id: number; success: boolean }[],
+                storages: [] as { id: number; is_sent: boolean }[],
+                apis: [] as { id: number; is_sent: boolean }[],
+                ftps: [] as { id: number; is_sent: boolean }[],
             };
 
             for (const rule of processingRules) {
@@ -166,17 +166,17 @@ export class DocumentController {
                     if (destination.localStorageFolder) {
                         logs.storages.push({
                             id: destination.localStorageFolder.dataValues.id,
-                            success: await destination.localStorageFolder.send(json),
+                            is_sent: await destination.localStorageFolder.send(json),
                         });
                     } else if (destination.externalApiEndpoint) {
                         logs.apis.push({
                             id: destination.externalApiEndpoint.dataValues.id,
-                            success: await destination.externalApiEndpoint.send(json),
+                            is_sent: await destination.externalApiEndpoint.send(json),
                         });
                     } else if (destination.externalFtpEndpoint) {
                         logs.ftps.push({
                             id: destination.externalFtpEndpoint.dataValues.id,
-                            success: await destination.externalFtpEndpoint.send(json),
+                            is_sent: await destination.externalFtpEndpoint.send(json),
                         });
                     }
                 }
