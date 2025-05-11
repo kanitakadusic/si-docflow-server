@@ -19,16 +19,17 @@ lerna-debug.log*
 *.sw?
 
 # Node
+node_modules
 dist
 *.local
-node_modules
-.env
 
 # OCR
 *.traineddata
+ai_model
 
-# debug
+# Debug
 debug
 
-# Credentials
+# Secrets
+.env
 *-credentials.json
