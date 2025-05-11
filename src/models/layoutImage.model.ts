@@ -1,19 +1,26 @@
-import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
+import {
+    Association,
+    CreationOptional,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    NonAttribute,
+    Sequelize,
+} from 'sequelize';
+import { DocumentLayout } from './documentLayout.model.js';
 
-interface ILayoutImage {
-    id: number;
-    image: Buffer;
-    width: number;
-    height: number;
-}
-
-type TLayoutImage = Optional<ILayoutImage, 'id'>;
-
-export class LayoutImage extends Model<ILayoutImage, TLayoutImage> implements ILayoutImage {
-    declare id: number;
+export class LayoutImage extends Model<InferAttributes<LayoutImage>, InferCreationAttributes<LayoutImage>> {
+    declare id: CreationOptional<number>;
     declare image: Buffer;
     declare width: number;
     declare height: number;
+
+    declare documentLayout?: NonAttribute<DocumentLayout>;
+
+    declare static associations: {
+        documentLayout: Association<LayoutImage, DocumentLayout>;
+    };
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -43,4 +50,13 @@ export class LayoutImage extends Model<ILayoutImage, TLayoutImage> implements IL
             },
         );
     }
+
+    public static associate() {
+        this.hasOne(DocumentLayout, {
+            foreignKey: 'image_id',
+            as: 'documentLayout',
+        });
+    }
+
+    public static hook() {}
 }

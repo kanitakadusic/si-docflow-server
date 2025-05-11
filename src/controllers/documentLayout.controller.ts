@@ -1,13 +1,11 @@
 import { Request, Response } from 'express';
 
-import { DocumentLayoutService } from '../services/documentLayout.service.js';
+import { DocumentLayout } from '../config/db.js';
 
 export class DocumentLayoutController {
-    private readonly documentLayoutService = new DocumentLayoutService();
-
     async getAll(_: Request, res: Response): Promise<void> {
         try {
-            const layouts = await this.documentLayoutService.getAll();
+            const layouts = await DocumentLayout.findAll();
             res.status(200).json({
                 data: layouts,
                 message: 'Document layouts have been successfully fetched',

@@ -8,8 +8,8 @@ const __dirname = dirname(__filename);
 
 try {
     dotenvSafe.config({
-        example: path.resolve(__dirname, '..', '.env.example'),
-        path: path.resolve(__dirname, '..', '.env'),
+        example: path.resolve(__dirname, '..', '..', '.env.example'),
+        path: path.resolve(__dirname, '..', '..', '.env'),
     });
 } catch (_) {
     console.error('Missing environment variable(s)');
@@ -24,7 +24,7 @@ function getEnvVariable(name: string): string {
     return process.env[name];
 }
 
-const googleCredentialsPath = path.join(__dirname, '..', 'google-credentials.json');
+const googleCredentialsPath = path.join(__dirname, '..', '..', 'google-credentials.json');
 if (!fs.existsSync(googleCredentialsPath)) {
     const base64 = getEnvVariable('GOOGLE_CREDENTIALS_BASE64');
 
@@ -47,4 +47,7 @@ export const OPENAI_API_KEY: string = getEnvVariable('OPENAI_API_KEY');
 export const AI_MODEL_NAME: string = getEnvVariable('AI_MODEL_NAME');
 export const AI_MODEL_DOWNLOAD_URL: string = getEnvVariable('AI_MODEL_DOWNLOAD_URL');
 
-export const ROOT: string = path.join(__dirname, '..');
+export const SUPABASE_URL: string = getEnvVariable('SUPABASE_URL');
+export const SUPABASE_SERVICE_ROLE_API_KEY: string = getEnvVariable('SUPABASE_SERVICE_ROLE_API_KEY');
+
+export const ROOT: string = path.join(__dirname, '..', '..');

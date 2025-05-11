@@ -1,11 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 
-import { AccessRightService } from '../services/accessRight.service.js';
+import { AccessRight } from '../config/db.js';
 
 export class AuthMiddleware {
-    private readonly accessRightService = new AccessRightService();
-
     async verifyToken(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const token = req.headers.authorization;
@@ -14,7 +12,7 @@ export class AuthMiddleware {
                 return;
             }
 
-            const activeRecords = await this.accessRightService.getAllActive();
+            const activeRecords = await AccessRight.findAll({ where: { is_active: true } });
 
             for (const activeRecord of activeRecords) {
                 const isMatch = await bcrypt.compare(token, activeRecord.token);
