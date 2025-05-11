@@ -121,17 +121,19 @@ export class DocumentPreprocessorService {
         }
 
         // I don't know if it is any better to use cv.BORDER_CONSTANT
+        const dst = new cv.Mat();
         cv.copyMakeBorder(
             mat,
-            mat,
+            dst,
             top + paddingOffset,
             bottom + paddingOffset,
             left + paddingOffset,
             right + paddingOffset,
             cv.BORDER_REPLICATE,
         );
+        mat.delete();
 
-        return mat;
+        return dst;
     }
 
     /**
@@ -173,13 +175,17 @@ export class DocumentPreprocessorService {
                 return 255;
             }),
         );
-        mat.convertTo(mat, cv.CV_8UC1);
+        const tmp = new cv.Mat();
+        mat.convertTo(tmp, cv.CV_8UC1);
+        mat = tmp; // its fine if reference is changed, real mat should be deleted outside function call
 
         const contours = new cv.MatVector();
-        cv.findContours(mat, contours, new cv.Mat(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+        const emptyMat = new cv.Mat(); // func doesnt work without it, for some reason
+        cv.findContours(mat, contours, emptyMat, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+        emptyMat.delete();
 
         let maxArea = -Infinity;
-        let maxMat = new cv.Mat();
+        let maxMat;
         for (let i = 0; i < contours.size(); i++) {
             const contourArea = cv.contourArea(contours.get(i));
             if (contourArea > maxArea) {
@@ -187,9 +193,17 @@ export class DocumentPreprocessorService {
                 maxMat = contours.get(i);
             }
         }
-        const docCorner = cv.moments(maxMat);
+
+        const docCorner = cv.moments(maxMat!);
         const x = docCorner['m10'] / docCorner['m00'];
         const y = docCorner['m01'] / docCorner['m00'];
+
+        mat.delete();
+        for (let i=0; i<contours.size(); i++) {
+            contours.get(i).delete();
+        }
+        contours.delete();
+
         return new cv.Point(x, y);
     }
 
@@ -223,6 +237,10 @@ export class DocumentPreprocessorService {
         ]);
         const perspectiveTransform = cv.getPerspectiveTransform(inputPts, outputPts);
         cv.warpPerspective(src, dst, perspectiveTransform, dSize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+        
+        inputPts.delete();
+        outputPts.delete();
+        perspectiveTransform.delete();
     }
 
     async extractDocumentFromPhotoWithAi(
@@ -240,10 +258,13 @@ export class DocumentPreprocessorService {
         let mat = await this.padImageToMakeSquare(photo, originalWidth, originalHeight);
         const paddedWidth = mat.size().width;
         const paddedHeight = mat.size().height;
-        const paddedMat = new cv.Mat(mat);
+        const paddedMat = mat.clone();
 
         const aiModelInputSize = 256;
-        cv.resize(mat, mat, new cv.Size(aiModelInputSize, aiModelInputSize));
+        let tmp = new cv.Mat();
+        cv.resize(mat, tmp, new cv.Size(aiModelInputSize, aiModelInputSize));
+        mat.delete();
+        mat = tmp;
 
         const tensor = this.getAiTensorInput(mat, aiModelInputSize);
 
@@ -261,6 +282,7 @@ export class DocumentPreprocessorService {
         const numberOfCorners = 4;
         const aiModelOutputSize = 128;
 
+        mat.delete();
         for (let corner = 0; corner < numberOfCorners; corner++) {
             mat = cv.matFromArray(
                 aiModelOutputSize,
@@ -271,14 +293,20 @@ export class DocumentPreprocessorService {
                     (corner + 1) * aiModelOutputSize * aiModelOutputSize,
                 ),
             );
-            cv.resize(mat, mat, new cv.Size(paddedWidth, paddedHeight), 0, 0, cv.INTER_LINEAR);
+            tmp = new cv.Mat();
+            cv.resize(mat, tmp, new cv.Size(paddedWidth, paddedHeight), 0, 0, cv.INTER_LINEAR);
 
-            const cornerCoordinates = this.getCentroidOfMaxContour(mat);
+            const cornerCoordinates = this.getCentroidOfMaxContour(tmp);
             documentCorners.push(cornerCoordinates);
-        }
 
-        this.cropAndFixPerspective(paddedMat, mat, documentCorners, imageWidth, imageHeight);
-        return await sharp(mat.data, {
+            mat.delete();
+            tmp.delete();
+        }
+        
+        tmp = new cv.Mat();
+        this.cropAndFixPerspective(paddedMat, tmp, documentCorners, imageWidth, imageHeight);
+
+        const extractedDoc = await sharp(tmp.data, {
             raw: {
                 width: imageWidth,
                 height: imageHeight,
@@ -287,6 +315,11 @@ export class DocumentPreprocessorService {
         })
             .png()
             .toBuffer();
+
+        paddedMat.delete();
+        tmp.delete();
+
+        return extractedDoc;
     }
 
     /**
