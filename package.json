@@ -5,7 +5,8 @@
   "main": "src/server.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
+    "bootstrap": "node dist/config/env.js && node dist/config/bootstrap.js",
+    "start": "npm run bootstrap && node dist/server.js",
     "dev": "npm run build && npm run start"
   },
   "keywords": [],
@@ -14,7 +15,10 @@
   "description": "Bringing new tools to your document workflow.",
   "dependencies": {
     "@google-cloud/vision": "^5.1.0",
+    "@supabase/supabase-js": "^2.49.4",
     "@techstark/opencv-js": "^4.10.0-release.1",
+    "axios": "^1.9.0",
+    "basic-ftp": "^5.0.5",
     "bcrypt": "^5.1.1",
     "canvas": "^3.1.0",
     "express": "^4.21.2",

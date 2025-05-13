@@ -1,4 +1,4 @@
-import { IField } from '../database/models/documentLayout.model.js';
+import { IField } from './model.js';
 
 export interface IOcrResult {
     text: string;
@@ -7,7 +7,7 @@ export interface IOcrResult {
 
 export interface IMappedOcrResult {
     field: IField;
-    ocrResult: IOcrResult;
+    result: IOcrResult;
 }
 
 export interface IOcrEngine {
