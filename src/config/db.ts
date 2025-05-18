@@ -11,6 +11,9 @@ import { LocalStorageFolder } from '../models/localStorageFolder.model.js';
 import { ExternalApiEndpoint } from '../models/externalApiEndpoint.model.js';
 import { ExternalFtpEndpoint } from '../models/externalFtpEndpoint.model.js';
 import { ProcessingRuleDestination } from '../models/processingRuleDestination.model.js';
+import { AiProvider } from '../models/aiProvider.model.js';
+import { ProcessingRequestBillingLog } from '../models/processingRequestsBillingLog.model.js';
+import { ProcessingResultsTriplet } from '../models/processingResultsTriplet.model.js';
 
 const sequelize: Sequelize = new Sequelize(DATABASE_URL, {
     dialect: 'postgres',
@@ -26,6 +29,9 @@ LocalStorageFolder.initialize(sequelize);
 ExternalApiEndpoint.initialize(sequelize);
 ExternalFtpEndpoint.initialize(sequelize);
 ProcessingRuleDestination.initialize(sequelize);
+AiProvider.initialize(sequelize);
+ProcessingRequestBillingLog.initialize(sequelize);
+ProcessingResultsTriplet.initialize(sequelize);
 
 DocumentType.associate();
 AccessRight.associate();
@@ -36,6 +42,9 @@ LocalStorageFolder.associate();
 ExternalApiEndpoint.associate();
 ExternalFtpEndpoint.associate();
 ProcessingRuleDestination.associate();
+AiProvider.associate();
+ProcessingRequestBillingLog.associate();
+ProcessingResultsTriplet.associate();
 
 DocumentType.hook();
 AccessRight.hook();
@@ -46,6 +55,9 @@ LocalStorageFolder.hook();
 ExternalApiEndpoint.hook();
 ExternalFtpEndpoint.hook();
 ProcessingRuleDestination.hook();
+AiProvider.hook();
+ProcessingRequestBillingLog.hook();
+ProcessingResultsTriplet.hook();
 
 export {
     sequelize,
@@ -58,4 +70,7 @@ export {
     ExternalApiEndpoint,
     ExternalFtpEndpoint,
     ProcessingRuleDestination,
+    AiProvider,
+    ProcessingRequestBillingLog,
+    ProcessingResultsTriplet,
 };
