@@ -73,7 +73,7 @@ export class ProcessingRule extends Model<InferAttributes<ProcessingRule>, Infer
 
     public static associate() {
         this.belongsTo(DocumentType, {
-            foreignKey: 'document_type_id',
+            foreignKey: 'id',
             as: 'documentType',
         });
 

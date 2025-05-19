@@ -5,6 +5,10 @@ import { IOcrEngine, IOcrResult } from '../types/ocr.js';
 export class GoogleVisionService implements IOcrEngine {
     private readonly client = new vision.ImageAnnotatorClient();
 
+    // Price for document detection, one unit is one image
+    // Price is per 1000 units
+    private static readonly pricePerUnit = 1.5 / 1000;
+
     async startup(langCode: string): Promise<void> {}
 
     async cleanup(): Promise<void> {}
@@ -17,6 +21,7 @@ export class GoogleVisionService implements IOcrEngine {
             return {
                 text: '',
                 confidence: 0,
+                price: 0
             };
         }
 
@@ -45,6 +50,7 @@ export class GoogleVisionService implements IOcrEngine {
         return {
             text: annotation.text ?? '',
             confidence: Number(averageConfidence.toFixed(2)),
+            price: GoogleVisionService.pricePerUnit
         };
     }
 }
