@@ -12,32 +12,14 @@ import { GoogleVisionService } from './googleVision.service.js';
 import { ChatGptService } from './chatGpt.service.js';
 
 export class OcrService {
-    private readonly engines: Map<string, IOcrEngine> = new Map([
-        ['tesseract', new TesseractService()],
-        ['googleVision', new GoogleVisionService()],
-        ['chatGpt', new ChatGptService()],
+    private readonly engines: Map<string, IOcrEngine> = new Map<string, IOcrEngine>([
+        ['tesseract', new TesseractService() as IOcrEngine],
+        ['googleVision', new GoogleVisionService() as IOcrEngine],
+        ['chatGpt', new ChatGptService() as IOcrEngine],
     ]);
 
     async extractFields(image: Buffer, fields: IField[], engine: IOcrEngine): Promise<IMappedOcrResultWithImage[]> {
         const result: IMappedOcrResultWithImage[] = [];
-
-        // debug ->
-        // const sanitizeFieldName = function (str: string): string {
-        //     return str
-        //         .normalize('NFD')
-        //         .replace(/[\u0300-\u036f]/g, '')
-        //         .replace(/[^a-zA-Z0-9]/g, '_')
-        //         .replace(/_+/g, '_')
-        //         .replace(/^_|_$/g, '')
-        //         .toLowerCase();
-        // };
-        //
-        // const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        // const outputDir = path.join(ROOT, 'debug', 'ocr_outputs', timestamp);
-        // fs.mkdirSync(outputDir, { recursive: true });
-        //
-        // fs.writeFileSync(join(outputDir, 'DOCUMENT.png'), image);
-        // <- debug
 
         for (const field of fields) {
             const cropped = await sharp(image)
@@ -50,11 +32,6 @@ export class OcrService {
                 .png()
                 .toBuffer();
 
-            // debug ->
-            // const outputPath = path.join(outputDir, `${sanitizeFieldName(field.name)}.png`);
-            // fs.writeFileSync(outputPath, cropped);
-            // <- debug
-            
             const ocrResult = await engine.extract(cropped);
             if (!field.is_multiline) {
                 ocrResult.text = ocrResult.text.replace(/\n/g, '');
@@ -67,15 +44,28 @@ export class OcrService {
     }
 
     async runOcr(image: Buffer, fields: IField[], engineName: string, langCode: string): Promise<IMappedOcrResultWithImage[]> {
-        const engine: IOcrEngine | undefined = this.engines.get(engineName);
+        const engine = this.engines.get(engineName);
+
         if (!engine) {
             throw new Error(`Unsupported OCR engine: ${engineName}`);
         }
 
         await engine.startup(langCode);
-        const result = await this.extractFields(image, fields, engine);
-        await engine.cleanup();
 
+        let result: IMappedOcrResultWithImage[];
+
+        // Ako engine implementira extractFieldsBatch (provjera pomoću type guarda)
+        if (typeof engine.extractFieldsBatch === 'function') {
+            const batchResult = await engine.extractFieldsBatch(image, fields);
+            result = batchResult.map(r => ({
+                mappedResult: r,
+                image: Buffer.alloc(0), // prazna slika jer smo sve spojili
+            }));
+        } else {
+            result = await this.extractFields(image, fields, engine);
+        }
+
+        await engine.cleanup();
         return result;
     }
 }
