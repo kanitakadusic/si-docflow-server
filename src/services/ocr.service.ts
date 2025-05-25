@@ -5,8 +5,8 @@ import sharp from 'sharp';
 //
 // import { ROOT } from '../config.js';
 // <- debug
-import { IField } from '../database/models/documentLayout.model.js';
-import { IMappedOcrResult, IOcrEngine } from '../types/ocr.js';
+import { IField } from '../types/model.js';
+import { IMappedOcrResultWithImage, IOcrEngine } from '../types/ocr.js';
 import { TesseractService } from './tesseract.service.js';
 import { GoogleVisionService } from './googleVision.service.js';
 import { ChatGptService } from './chatGpt.service.js';
@@ -18,8 +18,8 @@ export class OcrService {
         ['chatGpt', new ChatGptService()],
     ]);
 
-    async extractFields(image: Buffer, fields: IField[], engine: IOcrEngine): Promise<IMappedOcrResult[]> {
-        const result: IMappedOcrResult[] = [];
+    async extractFields(image: Buffer, fields: IField[], engine: IOcrEngine): Promise<IMappedOcrResultWithImage[]> {
+        const result: IMappedOcrResultWithImage[] = [];
 
         // debug ->
         // const sanitizeFieldName = function (str: string): string {
@@ -54,19 +54,19 @@ export class OcrService {
             // const outputPath = path.join(outputDir, `${sanitizeFieldName(field.name)}.png`);
             // fs.writeFileSync(outputPath, cropped);
             // <- debug
-
+            
             const ocrResult = await engine.extract(cropped);
             if (!field.is_multiline) {
                 ocrResult.text = ocrResult.text.replace(/\n/g, '');
             }
 
-            result.push({ field, ocrResult });
+            result.push({ mappedResult: { field, result: ocrResult }, image: cropped });
         }
 
         return result;
     }
 
-    async runOcr(image: Buffer, fields: IField[], engineName: string, langCode: string): Promise<IMappedOcrResult[]> {
+    async runOcr(image: Buffer, fields: IField[], engineName: string, langCode: string): Promise<IMappedOcrResultWithImage[]> {
         const engine: IOcrEngine | undefined = this.engines.get(engineName);
         if (!engine) {
             throw new Error(`Unsupported OCR engine: ${engineName}`);

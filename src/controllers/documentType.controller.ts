@@ -1,13 +1,11 @@
 import { Request, Response } from 'express';
 
-import { DocumentTypeService } from '../services/documentType.service.js';
+import { DocumentType } from '../config/db.js';
 
 export class DocumentTypeController {
-    private readonly documentTypeService = new DocumentTypeService();
-
     async getAll(_: Request, res: Response): Promise<void> {
         try {
-            const types = await this.documentTypeService.getAll();
+            const types = await DocumentType.findAll();
             res.status(200).json({
                 data: types,
                 message: 'Document types have been successfully fetched',
