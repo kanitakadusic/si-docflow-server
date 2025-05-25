@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import sharp from 'sharp';
 
 import { OPENAI_API_KEY } from '../config/env.js';
-import { IOcrEngine, IOcrResult, IMappedOcrResult } from '../types/ocr.js';
+import { IMappedOcrResult, IOcrEngine } from '../types/ocr.js';
 import { IField } from '../types/model.js';
 
 export class ChatGptService implements IOcrEngine {
@@ -14,17 +14,19 @@ export class ChatGptService implements IOcrEngine {
     async startup(langCode: string): Promise<void> {}
     async cleanup(): Promise<void> {}
 
-    async extract(): Promise<IOcrResult> {
-        throw new Error('Use extractFieldsBatch instead for ChatGptService');
-    }
-
     async extractFieldsBatch(crops: { field: IField; image: Buffer }[]): Promise<IMappedOcrResult[]> {
         const fieldHeight = 200;
 
         const totalHeight = crops.length * fieldHeight;
-        const maxWidth = Math.max(...await Promise.all(crops.map(c =>
-            sharp(c.image).metadata().then(m => m.width ?? 0)
-        )));
+        const maxWidth = Math.max(
+            ...(await Promise.all(
+                crops.map((c) =>
+                    sharp(c.image)
+                        .metadata()
+                        .then((m) => m.width ?? 0),
+                ),
+            )),
+        );
 
         const mergedImage = await sharp({
             create: {
@@ -32,14 +34,19 @@ export class ChatGptService implements IOcrEngine {
                 height: totalHeight,
                 channels: 4,
                 background: { r: 255, g: 255, b: 255, alpha: 1 },
-            }
-        }).composite(
-            await Promise.all(crops.map(async (crop, idx) => ({
-                input: crop.image,
-                top: idx * fieldHeight,
-                left: 0,
-            })))
-        ).png().toBuffer();
+            },
+        })
+            .composite(
+                await Promise.all(
+                    crops.map(async (crop, idx) => ({
+                        input: crop.image,
+                        top: idx * fieldHeight,
+                        left: 0,
+                    })),
+                ),
+            )
+            .png()
+            .toBuffer();
 
         const base64Image = mergedImage.toString('base64');
 
