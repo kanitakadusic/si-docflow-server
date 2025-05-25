@@ -16,27 +16,17 @@ export class GoogleVisionService implements IOcrEngine {
         throw new Error('Use extractFieldsBatch instead for GoogleVisionService');
     }
 
-    async extractFieldsBatch(image: Buffer, fields: IField[]): Promise<IMappedOcrResult[]> {
+    async extractFieldsBatch(crops: { field: IField, image: Buffer }[]): Promise<IMappedOcrResult[]> {
         const yOffsets: { start: number; end: number; field: IField }[] = [];
         const croppedBuffers: Buffer[] = [];
         let currentYOffset = 0;
 
-        for (const field of fields) {
-            const cropped = await sharp(image)
-                .extract({
-                    left: Math.round(field.upper_left[0]),
-                    top: Math.round(field.upper_left[1]),
-                    width: Math.round(field.lower_right[0] - field.upper_left[0]),
-                    height: Math.round(field.lower_right[1] - field.upper_left[1]),
-                })
-                .png()
-                .toBuffer();
-
-            const metadata = await sharp(cropped).metadata();
+        for (const { field, image } of crops) {
+            const metadata = await sharp(image).metadata();
             const height = metadata.height ?? 0;
 
             yOffsets.push({ start: currentYOffset, end: currentYOffset + height, field });
-            croppedBuffers.push(cropped);
+            croppedBuffers.push(image);
             currentYOffset += height;
         }
 
@@ -54,8 +44,9 @@ export class GoogleVisionService implements IOcrEngine {
 
         const [result] = await this.client.documentTextDetection({ image: { content: finalImage } });
         const annotation = result.fullTextAnnotation;
+
         if (!annotation) {
-            return fields.map(field => ({
+            return crops.map(({ field }) => ({
                 field,
                 result: { text: '', confidence: 0, price: GoogleVisionService.pricePerUnit },
             }));
@@ -90,12 +81,12 @@ export class GoogleVisionService implements IOcrEngine {
             ? symbolConfidences.reduce((a, b) => a + b, 0) / symbolConfidences.length
             : 0;
 
-        return fields.map(field => ({
+        return crops.map(({ field }) => ({
             field,
             result: {
                 text: fieldTextMap.get(field)?.join(' ') ?? '',
                 confidence: Number(averageConfidence.toFixed(2)),
-                price: GoogleVisionService.pricePerUnit,
+                price: GoogleVisionService.pricePerUnit / crops.length,
             }
         }));
     }

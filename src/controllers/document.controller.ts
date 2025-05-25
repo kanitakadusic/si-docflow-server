@@ -227,13 +227,13 @@ export class DocumentController {
         });
     }*/
    
-   private async logProcessingRequestBilling(aiProvider: AiProvider, documentType: DocumentType, 
-    mappedResults: IMappedOcrResult[], fileName: string): Promise<void> {
-    
-    // Ako je Google Vision, cijena se uzima iz prvog fielda jer je za sve isti batch
-    const totalPrice = aiProvider.name === 'googleVision'
-        ? mappedResults[0]?.result.price ?? 0
-        : mappedResults.reduce((sum, mappedResult) => sum + mappedResult.result.price, 0);
+private async logProcessingRequestBilling(
+    aiProvider: AiProvider,
+    documentType: DocumentType,
+    mappedResults: IMappedOcrResult[],
+    fileName: string
+): Promise<void> {
+    const totalPrice = mappedResults.reduce((sum, mappedResult) => sum + mappedResult.result.price, 0);
 
     await ProcessingRequestBillingLog.create({
         document_type_id: documentType.id,

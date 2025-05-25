@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import sharp from 'sharp';
 
 import { OPENAI_API_KEY } from '../config/env.js';
-import { IOcrEngine, IOcrResult, IMappedOcrResult} from '../types/ocr.js';
+import { IOcrEngine, IOcrResult, IMappedOcrResult } from '../types/ocr.js';
 import { IField } from '../types/model.js';
 
 export class ChatGptService implements IOcrEngine {
@@ -12,88 +12,33 @@ export class ChatGptService implements IOcrEngine {
     private static readonly completionTokensPrice = 20.0 / 1e6;
 
     async startup(langCode: string): Promise<void> {}
-
     async cleanup(): Promise<void> {}
 
-    async extract(image: Buffer): Promise<IOcrResult> {
-        const base64Image = image.toString('base64');
-
-        const response = await ChatGptService.openAi.chat.completions.create({
-            model: 'gpt-4o',
-            messages: [
-                {
-                    role: 'user',
-                    content: [
-                        {
-                            type: 'text',
-                            text: 'Extract the text and return confidence as JSON in this format: {"text": "...", "confidence": ...}',
-                        },
-                        {
-                            type: 'image_url',
-                            image_url: {
-                                url: `data:image/png;base64,${base64Image}`,
-                            },
-                        },
-                    ],
-                },
-            ],
-        });
-
-        let price = 0;
-        if (response.usage) {
-            price =
-                response.usage.prompt_tokens * ChatGptService.promptTokensPrice +
-                response.usage.completion_tokens * ChatGptService.completionTokensPrice;
-        }
-
-        const raw = response.choices[0]?.message?.content ?? '';
-        try {
-            const json = JSON.parse(raw.replace(/```json|```/g, '').trim());
-            return {
-                text: json.text ?? '',
-                confidence: json.confidence ?? 0,
-                price,
-            };
-        } catch {
-            return {
-                text: '',
-                confidence: 0,
-                price: 0,
-            };
-        }
+    async extract(): Promise<IOcrResult> {
+        throw new Error('Use extractFieldsBatch instead for ChatGptService');
     }
 
-    async extractFieldsBatch(image: Buffer, fields: IField[]): Promise<IMappedOcrResult[]> {
-        const crops: { field: IField; image: Buffer }[] = [];
+    async extractFieldsBatch(crops: { field: IField; image: Buffer }[]): Promise<IMappedOcrResult[]> {
+        const fieldHeight = 200;
 
-        for (const field of fields) {
-            const cropped = await sharp(image)
-                .extract({
-                    left: Math.round(field.upper_left[0]),
-                    top: Math.round(field.upper_left[1]),
-                    width: Math.round(field.lower_right[0] - field.upper_left[0]),
-                    height: Math.round(field.lower_right[1] - field.upper_left[1]),
-                })
-                .png()
-                .toBuffer();
-            crops.push({ field, image: cropped });
-        }
+        const totalHeight = crops.length * fieldHeight;
+        const maxWidth = Math.max(...await Promise.all(crops.map(c =>
+            sharp(c.image).metadata().then(m => m.width ?? 0)
+        )));
 
         const mergedImage = await sharp({
             create: {
-                width: Math.max(...crops.map(c => c.image.length)),
-                height: crops.length * 200,
+                width: maxWidth,
+                height: totalHeight,
                 channels: 4,
                 background: { r: 255, g: 255, b: 255, alpha: 1 },
-            },
+            }
         }).composite(
-            await Promise.all(
-                crops.map(async (crop, idx) => ({
-                    input: crop.image,
-                    top: idx * 200,
-                    left: 0,
-                }))
-            )
+            await Promise.all(crops.map(async (crop, idx) => ({
+                input: crop.image,
+                top: idx * fieldHeight,
+                left: 0,
+            })))
         ).png().toBuffer();
 
         const base64Image = mergedImage.toString('base64');
@@ -106,7 +51,9 @@ export class ChatGptService implements IOcrEngine {
                     content: [
                         {
                             type: 'text',
-                            text: 'Za svaku sliku (redoslijedom od vrha prema dnu), vrati JSON: {"field_index": n, "text": "...", "confidence": ...}',
+                            text: `The image contains multiple cropped text fields stacked from top to bottom.
+                                    For each field, return a JSON array where each element corresponds to one field, in this format:
+                                    {"text": "...", "confidence": number}. Return only the JSON array.`,
                         },
                         {
                             type: 'image_url',
@@ -130,16 +77,16 @@ export class ChatGptService implements IOcrEngine {
         try {
             const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
-            return fields.map((field, i) => ({
+            return crops.map(({ field }, i) => ({
                 field,
                 result: {
                     text: parsed[i]?.text ?? '',
                     confidence: parsed[i]?.confidence ?? 0,
-                    price: price / fields.length,
+                    price: price / crops.length,
                 },
             }));
         } catch {
-            return fields.map(field => ({
+            return crops.map(({ field }) => ({
                 field,
                 result: {
                     text: '',
