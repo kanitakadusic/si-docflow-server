@@ -215,7 +215,7 @@ export class DocumentController {
         }
     }
 
-    private async logProcessingRequestBilling(aiProvider: AiProvider, documentType: DocumentType, 
+  /*  private async logProcessingRequestBilling(aiProvider: AiProvider, documentType: DocumentType, 
         mappedResults: IMappedOcrResult[], fileName: string): Promise<void> {
         let totalPrice = 0;
         mappedResults.forEach( mappedResult => { totalPrice += mappedResult.result.price; });
@@ -225,7 +225,24 @@ export class DocumentController {
             ai_provider_id: aiProvider.id,
             price: totalPrice
         });
-    }
+    }*/
+   
+private async logProcessingRequestBilling(
+    aiProvider: AiProvider,
+    documentType: DocumentType,
+    mappedResults: IMappedOcrResult[],
+    fileName: string
+): Promise<void> {
+    const totalPrice = mappedResults.reduce((sum, mappedResult) => sum + mappedResult.result.price, 0);
+
+    await ProcessingRequestBillingLog.create({
+        document_type_id: documentType.id,
+        file_name: fileName,
+        ai_provider_id: aiProvider.id,
+        price: totalPrice
+    });
+}
+
 
     /**
      * Saves the Image data and Ai data from ocr before sending to

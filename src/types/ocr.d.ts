@@ -19,6 +19,7 @@ export interface IOcrEngine {
     startup: (langCode: string) => Promise<void>;
     cleanup: () => Promise<void>;
     extract: (image: Buffer) => Promise<IOcrResultWithPrice>;
+    extractFieldsBatch?(crops: { field: IField; image: Buffer }[]): Promise<IMappedOcrResult[]>;
 }
 
 export interface IOcrResultFinalized extends IOcrResult {
