@@ -8,7 +8,7 @@
     "bootstrap": "node dist/config/env.js && node dist/config/bootstrap.js",
     "start": "npm run bootstrap && node dist/server.js",
     "dev": "npm run build && npm run start",
-    "test": "vitest"
+    "test": "vitest --reporter verbose"
   },
   "keywords": [],
   "author": "docflow",
@@ -54,6 +54,6 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.28.0",
-    "vitest": "^3.1.2"
+    "vitest": "^3.1.4"
   }
 }
