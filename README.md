@@ -15,7 +15,7 @@ The component diagram of the system is provided below.
 To clone and run this application, you will need [Git](https://git-scm.com/) and [Node.js](https://nodejs.org/).
 
 ```
-# Clone this repository
+# Clone the repository
 $ git clone https://github.com/kanitakadusic/si-docflow-server.git
 
 # Go into the root directory
@@ -24,6 +24,12 @@ $ cd si-docflow-server
 # Install all dependencies
 $ npm install
 
+# Add .env with appropriate values ​​(.env.example provided)
+
 # Run the application
 $ npm run dev
 ```
+
+## Instructional Videos 🎥
+
+👉 [Click here to watch the local setup video](https://drive.google.com/file/d/1wA7gXKN9DZgM2DjyqakIQcsxJYVoVDWQ/view?usp=sharing) (4 minutes 39 seconds)
