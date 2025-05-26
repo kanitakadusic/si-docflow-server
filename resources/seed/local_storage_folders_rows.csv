@@ -1,0 +1,2 @@
+id,title,description,path,is_active,created_by,updated_by,createdAt,updatedAt
+1,Supabase storage,Bucket: finalized-documents,kanita/,true,3,,2025-05-09 20:21:36+00,2025-05-09 20:21:37+00
