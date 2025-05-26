@@ -33,3 +33,5 @@ $ npm run dev
 ## Instructional Videos 🎥
 
 👉 [Click here to watch the local setup video](https://drive.google.com/file/d/1wA7gXKN9DZgM2DjyqakIQcsxJYVoVDWQ/view?usp=sharing) (4 minutes 39 seconds)
+
+👉 [Click here to watch the Railway deployment video](https://drive.google.com/file/d/1AthoUzsoxkc6dAKwPNVe76llghace6MH/view?usp=sharing) (10 minutes 26 seconds)
