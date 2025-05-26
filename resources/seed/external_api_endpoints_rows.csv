@@ -1,0 +1,6 @@
+id,title,description,is_active,auth_type,auth_credentials,method,base_url,route,query_parameters,headers,body,timeout_seconds,created_by,updated_by,createdAt,updatedAt
+1,Processing server's test endpoint,:D,true,None,,POST,http://localhost:5000,/externalApiEndpoint,,"{
+  ""Content-Type"": ""application/json""
+}","{
+  ""initiator"": ""Kanita""
+}",10,3,,2025-05-08 22:25:39+00,2025-05-08 22:25:42+00
