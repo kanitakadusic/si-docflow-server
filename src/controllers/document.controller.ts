@@ -3,19 +3,19 @@ import { Request, Response } from 'express';
 import { DocumentPreprocessorService } from '../services/documentPreprocessor.service.js';
 import { OcrService } from '../services/ocr.service.js';
 import { IField } from '../types/model.js';
-import { IMappedOcrResult, IMappedOcrResultWithImage, IMappedOcrResultFinalized } from '../types/ocr.js';
+import { IMappedOcrResult, IMappedOcrResultFinalized, IMappedOcrResultWithImage } from '../types/ocr.js';
 import {
+    AiProvider,
     DocumentLayout,
     DocumentType,
     ExternalApiEndpoint,
     ExternalFtpEndpoint,
     LayoutImage,
     LocalStorageFolder,
-    ProcessingRule,
-    ProcessingRuleDestination,
-    AiProvider,
     ProcessingRequestBillingLog,
     ProcessingResultsTriplet,
+    ProcessingRule,
+    ProcessingRuleDestination,
 } from '../config/db.js';
 
 interface DocumentWithMetadataRequest extends Request {
@@ -105,14 +105,14 @@ export class DocumentController {
 
             for (const ocrEngine of ocrEngines) {
                 const result = await this.ocrService.runOcr(preprocessedDocument, fields, ocrEngine, lang.toString());
-                const mappedResults = result.map(result => result.mappedResult);
+                const mappedResults = result.map((result) => result.mappedResult);
 
                 const aiProvider = await AiProvider.findOne({
                     where: {
-                        name: ocrEngine
-                    }
+                        name: ocrEngine,
+                    },
                 });
-                if(ocrEngine != 'tesseract') {
+                if (ocrEngine != 'tesseract') {
                     await this.logProcessingRequestBilling(aiProvider!, documentType, mappedResults, file.originalname);
                 }
 
@@ -120,7 +120,7 @@ export class DocumentController {
                 // Database will have to get periodically cleaned, where user_data = ""
                 const tripletIds = await this.logProcessingResultTripletsImageAndAiData(result, aiProvider!);
 
-                results.push({ engine: ocrEngine, ocr: mappedResults, tripletIds: tripletIds});
+                results.push({ engine: ocrEngine, ocr: mappedResults, tripletIds: tripletIds });
             }
 
             res.status(200).json({
@@ -215,34 +215,40 @@ export class DocumentController {
         }
     }
 
-    private async logProcessingRequestBilling(aiProvider: AiProvider, documentType: DocumentType, 
-        mappedResults: IMappedOcrResult[], fileName: string): Promise<void> {
-        let totalPrice = 0;
-        mappedResults.forEach( mappedResult => { totalPrice += mappedResult.result.price; });
+    private async logProcessingRequestBilling(
+        aiProvider: AiProvider,
+        documentType: DocumentType,
+        mappedResults: IMappedOcrResult[],
+        fileName: string,
+    ): Promise<void> {
+        const totalPrice = mappedResults.reduce((sum, mappedResult) => sum + mappedResult.result.price, 0);
+
         await ProcessingRequestBillingLog.create({
             document_type_id: documentType.id,
             file_name: fileName,
             ai_provider_id: aiProvider.id,
-            price: totalPrice
+            price: totalPrice,
         });
     }
 
     /**
      * Saves the Image data and Ai data from ocr before sending to
      * user for finalization.
-     * Returns an array of ids pointing to the rows where the 
+     * Returns an array of ids pointing to the rows where the
      * former data is saved.
      */
-    private async logProcessingResultTripletsImageAndAiData(ocrResults: IMappedOcrResultWithImage[], 
-        aiProvider: AiProvider): Promise<number[]> {
+    private async logProcessingResultTripletsImageAndAiData(
+        ocrResults: IMappedOcrResultWithImage[],
+        aiProvider: AiProvider,
+    ): Promise<number[]> {
         const tripletIds = [];
 
         for (const ocrResult of ocrResults) {
             const triplet = await ProcessingResultsTriplet.create({
                 image: ocrResult.image,
                 ai_data: ocrResult.mappedResult.result.text,
-                user_data: "", // might be better to make nullable in database
-                ai_provider_id: aiProvider.id
+                user_data: '', // might be better to make nullable in database
+                ai_provider_id: aiProvider.id,
             });
             tripletIds.push(triplet.id);
         }
@@ -250,13 +256,18 @@ export class DocumentController {
         return tripletIds;
     }
 
-    private async logProcessingResultTripletsUserData(ocrResultsFinalized: IMappedOcrResultFinalized[], tripletIds: number[]) {
-        for (let i=0; i<tripletIds.length; i++) {
+    private async logProcessingResultTripletsUserData(
+        ocrResultsFinalized: IMappedOcrResultFinalized[],
+        tripletIds: number[],
+    ) {
+        for (let i = 0; i < tripletIds.length; i++) {
             await ProcessingResultsTriplet.update(
-                {user_data: ocrResultsFinalized[i].result.text},
-                {where: {
-                    id: tripletIds[i]
-                }}
+                { user_data: ocrResultsFinalized[i].result.text },
+                {
+                    where: {
+                        id: tripletIds[i],
+                    },
+                },
             );
         }
     }

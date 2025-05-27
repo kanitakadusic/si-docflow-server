@@ -1,6 +1,6 @@
 import { createWorker, Worker } from 'tesseract.js';
 
-import { IOcrEngine, IOcrResult} from '../types/ocr.js';
+import { IOcrEngine, IOcrResult } from '../types/ocr.js';
 
 export class TesseractService implements IOcrEngine {
     private worker: Worker | null = null;
@@ -17,11 +17,11 @@ export class TesseractService implements IOcrEngine {
         }
     }
 
-    async extract(image: Buffer): Promise<IOcrResult> {
+    async extractSingleField(image: Buffer): Promise<IOcrResult> {
         const ocrResult: IOcrResult = {
             text: '',
             confidence: 0,
-            price: 0
+            price: 0,
         };
         if (this.worker) {
             const result = await this.worker.recognize(image);
@@ -30,5 +30,4 @@ export class TesseractService implements IOcrEngine {
         }
         return ocrResult;
     }
-    
 }
