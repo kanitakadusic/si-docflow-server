@@ -2,11 +2,13 @@
 
 ## Environment Variables Setup
 
+> Variables marked with * must be properly set for the application to work correctly. Other variables can remain as they are in the [.env.example](../.env.example) file.
+
 ### PORT
 
 The `PORT` variable can remain the same as specified in the [.env.example](../.env.example) file. The application will run on the port defined by this variable.
 
-### DATABASE_URL
+### DATABASE_URL *
 
 Parts of the `DATABASE_URL` variable are configured differently depending on the environment (local or cloud) and the database provider (e.g., Supabase, AWS RDS). In any case, the format of the variable is as follows:
 
@@ -23,7 +25,7 @@ For a local setup, one common approach includes the following steps:
 postgresql://postgres:PASSWORD@localhost:5432/si-docflow
 ```
 
-### GOOGLE_CREDENTIALS_BASE64
+### GOOGLE_CREDENTIALS_BASE64 *
 
 ...
 
@@ -35,7 +37,7 @@ The `GOOGLE_APPLICATION_CREDENTIALS` variable should remain as it is in the [.en
 ./google-credentials.json
 ```
 
-### OPENAI_API_KEY
+### OPENAI_API_KEY *
 
 ...
 
@@ -91,4 +93,4 @@ The `SUPABASE_KEY` variable serves as the authentication key required to access 
 To obtain the `SUPABASE_KEY`, the following steps need to be completed:
 
 1. Navigate to _Project Settings_ > _API Keys_
-2. Locate the _service_role_ key, which corresponds to the _SUPABASE_KEY_
+2. Locate the _service_role_ key, which corresponds to the `SUPABASE_KEY`
