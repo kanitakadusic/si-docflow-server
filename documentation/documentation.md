@@ -1,3 +1,5 @@
+⚠️ Note: This documentation is outdated.
+
 # Server-Side Documentation Sprint 3
 
 ## 1. Project Overview
