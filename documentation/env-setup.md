@@ -23,29 +23,6 @@ For a local setup, one common approach includes the following steps:
 postgresql://postgres:PASSWORD@localhost:5432/si-docflow
 ```
 
-To create tables and insert initial data, follow these steps:
-```
-# Clone the si-docflow-admin repository
-$ git clone https://github.com/HarisMalisevic/si-docflow-admin.git
-
-# Go into the backend directory
-$ cd si-docflow-server/backend
-
-# Install all dependencies
-$ npm install
-
-# Rename .env.example to .env
-# Set the DATABASE_URL as explained previously
-
-# Place the sso_init.ts file into the backend/src/migrations folder
-
-# Run the following commands
-$ npm run migrate
-$ npm run seed
-```
-
-After this, the database is fully ready for the [si-docflow-server](https://github.com/kanitakadusic/si-docflow-server).
-
 ### GOOGLE_CREDENTIALS_BASE64
 
 ...
