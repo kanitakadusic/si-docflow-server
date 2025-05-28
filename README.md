@@ -18,22 +18,28 @@ To clone and run this application, you will need [Git](https://git-scm.com/), [N
 # Clone the repository
 $ git clone https://github.com/kanitakadusic/si-docflow-server.git
 
-# Go into the root directory
+# Navigate to the project directory
 $ cd si-docflow-server
 
 # Install all dependencies
 $ npm install
 
-# In the project root, add .env with appropriate values
-# Follow the instructions provided in ./documentation/env-setup.md
+# Create a .env file in the project root with required environment variables
+# See ./documentation/env-setup.md for details
 
-# Create tables and insert seed data
+# Compile TypeScript to JavaScript
 $ npm run build
+
+# Load and export environment variables
 $ npm run vars
+
+# Create database tables and insert seed data
 $ npm run seed
 
-# Run the application
+# Perform initial setup tasks
 $ npm run bootstrap
+
+# Start the application
 $ npm run serve
 
 # For further development
