@@ -69,8 +69,26 @@ https://drive.usercontent.google.com/download?id=14vUH77v6yGg7zFctUgcT6BzV5Iisg4
 
 ### SUPABASE_URL
 
-...
+In the current implementation, Supabase buckets are used as local storage for processed documents. Therefore, the `SUPABASE_URL` variable represents the base URL of the Supabase project.
 
-### SUPABASE_SERVICE_ROLE_API_KEY
+To obtain the `SUPABASE_URL`, the following steps need to be completed:
 
-...
+1. Access [Supabase](https://supabase.com/)
+2. Log in or create an account
+3. Create a new organization
+4. Create a new project
+5. Navigate to _Project Settings_ > _Data API_
+6. Locate the _Project URL_, which corresponds to the `SUPABASE_URL`
+
+```
+https://PROJECT_ID.supabase.co
+```
+
+### SUPABASE_KEY
+
+The `SUPABASE_KEY` variable serves as the authentication key required to access the Supabase project. It is also used for managing local storage of processed documents.
+
+To obtain the `SUPABASE_KEY`, the following steps need to be completed:
+
+1. Navigate to _Project Settings_ > _API Keys_
+2. Locate the _service_role_ key, which corresponds to the _SUPABASE_KEY_
