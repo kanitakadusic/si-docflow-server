@@ -56,9 +56,21 @@ Google credentials are required in order to use the Google Vision OCR engine.
   
 #### How to Integrate Credentials
 
-If running the project locally, the generated credentials file should be renamed to _google-credentials.json_ and placed in the root of the project. In this case, the `GOOGLE_CREDENTIALS_BASE64` variable can be left as it is in the [.env.example](../.env.example) file.
+First, rename the generated credentials file to _google-credentials.json_ and place it in the root of the project.
 
-If the project needs to be pushed to a public repository from which it will be deployed to production, the credentials must never be made publicly accessible. In this case, the file should be deleted from the project root (or added to _.gitignore_), and the `GOOGLE_CREDENTIALS_BASE64` variable should be set to contain the base64-encoded value of the credentials file.
+##### Option 1
+
+If running the project locally, the `GOOGLE_CREDENTIALS_BASE64` variable can be left as it is in the [.env.example](../.env.example) file.
+
+##### Option 2
+
+If the project needs to be pushed to a public repository from which it will be deployed to production, the `GOOGLE_CREDENTIALS_BASE64` variable should be set to the base64-encoded content of the credentials file. Naturally, the _.env_ file must not be pushed to a public repository.
+
+To encode the credentials to base64, simply run:
+```
+node ./src/config/base64.js
+```
+This will generate a file named _google-credentials-base64.txt_ in the project root. The contents of this file should be used as the value for the `GOOGLE_CREDENTIALS_BASE64` environment variable.
 
 ### GOOGLE_APPLICATION_CREDENTIALS
 
