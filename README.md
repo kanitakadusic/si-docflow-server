@@ -12,7 +12,7 @@ The component diagram of the system is provided below.
 
 ## How to Use ⚙️
 
-To clone and run this application, you will need [Git](https://git-scm.com/) and [Node.js](https://nodejs.org/).
+To clone and run this application, you will need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) and [PostgreSQL](https://www.postgresql.org/download/).
 
 ```
 # Clone the repository
@@ -24,9 +24,19 @@ $ cd si-docflow-server
 # Install all dependencies
 $ npm install
 
-# Add .env with appropriate values ​​(.env.example provided)
+# In the project root, add .env with appropriate values
+# Follow the instructions provided in ./documentation/env-setup.md
+
+# Create tables and insert seed data
+$ npm run build
+$ npm run vars
+$ npm run seed
 
 # Run the application
+$ npm run bootstrap
+$ npm run serve
+
+# For further development
 $ npm run dev
 ```
 
