@@ -84,6 +84,12 @@ The `GOOGLE_APPLICATION_CREDENTIALS` variable should remain as it is in the [.en
 
 The `OPENAI_API_KEY` variable is required to use ChatGPT as the OCR engine.
 
+> The application can be used by keeping the default `OPENAI_API_KEY` value from [.env.example](../.env.example), but in that case it is not possible to use ChatGPT as the OCR engine.
+
+#### Billing Requirement
+
+To use the OpenAI API, you must set up a billing account. Without a valid payment method, the API key will not work even if it's correctly set.
+
 #### How to Generate API Key
 
 1. Create or log in to your account at [OpenAI Platform](https://platform.openai.com/)  
