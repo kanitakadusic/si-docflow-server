@@ -27,7 +27,38 @@ postgresql://postgres:PASSWORD@localhost:5432/si-docflow
 
 ### GOOGLE_CREDENTIALS_BASE64 *
 
-...
+Google credentials are required in order to use the Google Vision OCR engine.
+
+#### How to Generate Credentials
+
+1. Create a Google Cloud Project
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Click _Select a project_ > _New project_
+   - Enter a project name and click _Create_
+
+2. Enable the Vision API
+   - Open the _Navigation menu_
+   - Go to _APIs & Services_ > _Library_
+   - Search for _Cloud Vision API_
+   - Select _Cloud Vision API (Google Enterprise API)_ and click _Enable_
+
+3. Create a Service Account
+   - Go to _APIs & Services_ > _Credentials_
+   - Click _Create Credentials_ > _Service Account_
+   - Fill in the service account name and description
+   - Click _Create and continue_, then _Done_
+  
+4. Create a Key File (JSON)
+   - Under _Service Accounts_, click your newly created account
+   - Go to the _Keys_ tab
+   - Click _Add Key_ > _Create new key_, choose JSON, and click _Create_
+   - Save the file securely - it contains sensitive credentials
+  
+#### How to Integrate Credentials
+
+If running the project locally, the generated credentials file should be renamed to _google-credentials.json_ and placed in the root of the project. In this case, the `GOOGLE_CREDENTIALS_BASE64` variable can be left as it is in the [.env.example](../.env.example) file.
+
+If the project needs to be pushed to a public repository from which it will be deployed to production, the credentials must never be made publicly accessible. In this case, the file should be deleted from the project root (or added to _.gitignore_), and the `GOOGLE_CREDENTIALS_BASE64` variable should be set to contain the base64-encoded value of the credentials file.
 
 ### GOOGLE_APPLICATION_CREDENTIALS
 
