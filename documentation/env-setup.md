@@ -82,7 +82,18 @@ The `GOOGLE_APPLICATION_CREDENTIALS` variable should remain as it is in the [.en
 
 ### OPENAI_API_KEY *
 
-...
+The `OPENAI_API_KEY` variable is required to use ChatGPT as the OCR engine.
+
+#### How to Generate API Key
+
+1. Create or log in to your account at [OpenAI Platform](https://platform.openai.com/)  
+2. Go to _Settings_
+3. Select _API keys_
+4. Click _Create new secret key_
+
+#### How to Integrate API Key
+
+Set the generated API key as the value of the `OPENAI_API_KEY` environment variable.
 
 ### AI_MODEL_NAME
 
