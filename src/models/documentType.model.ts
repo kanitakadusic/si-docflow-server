@@ -18,7 +18,7 @@ export class DocumentType extends Model<InferAttributes<DocumentType>, InferCrea
     declare name: string;
     declare description: string | null;
     declare document_layout_id: ForeignKey<DocumentLayout['id']>;
-    declare created_by: number;
+    declare created_by: number | null;
 
     declare documentLayout?: NonAttribute<DocumentLayout>;
     declare processingRules?: NonAttribute<ProcessingRule[]>;
@@ -52,7 +52,7 @@ export class DocumentType extends Model<InferAttributes<DocumentType>, InferCrea
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                 },
             },
             {
