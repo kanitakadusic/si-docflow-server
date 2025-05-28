@@ -5,8 +5,11 @@
   "main": "src/server.ts",
   "scripts": {
     "build": "tsc",
-    "bootstrap": "node dist/config/env.js && node dist/config/bootstrap.js",
-    "start": "npm run bootstrap && node dist/server.js",
+    "vars": "node dist/config/env.js",
+    "bootstrap": "node dist/config/bootstrap.js",
+    "seed": "node dist/config/seed.js",
+    "serve": "node dist/server.js",
+    "start": "npm run vars && npm run bootstrap && npm run serve",
     "dev": "npm run build && npm run start"
   },
   "keywords": [],
