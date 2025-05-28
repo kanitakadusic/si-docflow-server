@@ -40,6 +40,11 @@ $ npm run serve
 $ npm run dev
 ```
 
+## Documentation 📚
+
+- [Environment Variables Setup](./documentation/env-setup.md)
+- [API documentation](https://si-docflow-server.up.railway.app/api-docs/)
+
 ## Instructional Videos 🎥
 
 👉 [Click here to watch the local setup video](https://drive.google.com/file/d/1wA7gXKN9DZgM2DjyqakIQcsxJYVoVDWQ/view?usp=sharing) (4 minutes 39 seconds)
