@@ -24,14 +24,17 @@ async function seed<T extends Model>(fileName: string, model: ModelStatic<T>) {
 
 sequelize
     .authenticate()
-    .then(() => sequelize.sync())
+    .then(() => {
+        console.log('Successfully connected to the database');
+        return sequelize.sync();
+    })
     .then(async () => {
         await seed('layoutImage', LayoutImage);
         await seed('documentLayout', DocumentLayout);
         await seed('documentType', DocumentType);
         await seed('aiProvider', AiProvider);
 
-        console.log('Database models synchronized');
+        console.log('Database models successfully synchronized');
     })
     .catch((error) => {
         console.error('Error during database setup:', error);
