@@ -60,51 +60,48 @@ export class DocumentPreprocessorService {
         return this.aiModel;
     }
 
-    // debug ->
-    // private async saveImage(
-    //     mat: cv.Mat,
-    //     fileName: string,
-    //     width: number,
-    //     height: number,
-    //     channels: number,
-    // ): Promise<void> {
-    //     let buff = Buffer.alloc(0);
-    //     if (channels == 3) {
-    //         buff = await sharp(mat.data, {
-    //             raw: {
-    //                 width: width,
-    //                 height: height,
-    //                 channels: 3,
-    //             },
-    //         })
-    //             .png()
-    //             .toBuffer();
-    //     } else if (channels == 1) {
-    //         buff = await sharp(mat.data, {
-    //             raw: {
-    //                 width: width,
-    //                 height: height,
-    //                 channels: 1,
-    //             },
-    //         })
-    //             .grayscale()
-    //             .png()
-    //             .toBuffer();
-    //     }
-    //
-    //     fs.writeFileSync(join(ROOT, 'debug', 'ocr_outputs', fileName), buff);
-    // }
-    // <- debug
-
-    private async padImageToMakeSquare(photo: Buffer, width: number, height: number): Promise<cv.Mat> {
-        const mat: cv.Mat = cv.matFromArray(height, width, cv.CV_8UC3, photo);
-
+     /* debug
+     private async saveImage(
+         mat: cv.Mat,
+         fileName: string,
+         width: number,
+         height: number,
+         channels: number,
+     ): Promise<void> {
+         let buff = Buffer.alloc(0);
+         if (channels == 3) {
+             buff = await sharp(mat.data, {
+                 raw: {
+                     width: width,
+                     height: height,
+                     channels: 3,
+                 },
+             })
+                 .png()
+                 .toBuffer();
+         } else if (channels == 1) {
+             buff = await sharp(mat.data, {
+                 raw: {
+                     width: width,
+                     height: height,
+                     channels: 1,
+                 },
+             })
+                 .grayscale()
+                 .png()
+                 .toBuffer();
+         }
+    
+         fs.writeFileSync(join(ROOT, 'debug', 'ocr_outputs', fileName), buff);
+     }*/
+     
+    private getSizeForSquarePadding(width: number, height: number): number[] {
         // adding padding for 2 reasons:
         // 1. To make image square so when its resized aspect ratio is conserved
         // 2. Additional padding is added by amount of pixels paddingOffset because
         //    if borders of document are near border of picture the AI model will not
         //    be able to infer the corner points
-        const paddingOffset = 100;
+        const paddingOffset = 20;
         let paddingSize = 0;
         let top = 0,
             bottom = 0,
@@ -121,18 +118,7 @@ export class DocumentPreprocessorService {
             bottom = paddingSize % 2 == 0 ? top : top + 1; // one additional pixel of padding since paddingSize is odd
         }
 
-        // I do not know if it is any better to use cv.BORDER_CONSTANT
-        cv.copyMakeBorder(
-            mat,
-            mat,
-            top + paddingOffset,
-            bottom + paddingOffset,
-            left + paddingOffset,
-            right + paddingOffset,
-            cv.BORDER_REPLICATE,
-        );
-
-        return mat;
+        return [top+paddingOffset, bottom+paddingOffset, left+paddingOffset, right+paddingOffset];
     }
 
     /**
@@ -262,15 +248,29 @@ export class DocumentPreprocessorService {
         const aiModelInputSize = 256;
         const aiModelOutputSize = 128;
 
-        const { width: originalWidth, height: originalHeight } = await sharp(photo).metadata();
-        if (!originalWidth || !originalHeight) {
-            return null;
-        }
-        photo = await sharp(photo).removeAlpha().png().raw().toBuffer();
+        let resizedPhoto = await sharp(photo)
+                        .resize({
+                        width: 200,
+                        fit: 'contain'
+                        })
+                        .removeAlpha().png().toBuffer();
 
-        let mat: cv.Mat = await this.padImageToMakeSquare(photo, originalWidth, originalHeight);
-        const { width: paddedWidth, height: paddedHeight } = mat.size();
-        const paddedMat: cv.Mat = mat.clone();
+        const resizedWidth = 200;
+        const resizedHeight = (await sharp(resizedPhoto).metadata()).height!;
+        resizedPhoto = await sharp(resizedPhoto).raw().toBuffer();
+
+        const resizedPhotoPaddingSize: number[] = await this.getSizeForSquarePadding(resizedWidth, resizedHeight);
+        let mat: cv.Mat = cv.matFromArray(resizedHeight, resizedWidth, cv.CV_8UC3, resizedPhoto);
+        // I do not know if it is any better to use cv.BORDER_CONSTANT
+        cv.copyMakeBorder(
+            mat,
+            mat,
+            resizedPhotoPaddingSize[0],
+            resizedPhotoPaddingSize[1],
+            resizedPhotoPaddingSize[2],
+            resizedPhotoPaddingSize[3],
+            cv.BORDER_REPLICATE,
+        );
 
         cv.resize(mat, mat, new cv.Size(aiModelInputSize, aiModelInputSize));
 
@@ -290,6 +290,24 @@ export class DocumentPreprocessorService {
         const heatmap = (await result['heatmap'].getData()) as Float32Array;
         const documentCorners: cv.Point[] = [];
 
+        /*
+            What's the idea
+
+            We find the corners of the scaled down document with aspect ratio saved and
+            then we scale the heatmap up to the size of the original image.
+
+            This way we dont have to save the matrix of the original image which is 
+            quite heavy on memory.
+        */
+       const { width: originalWidth, height: originalHeight } = await sharp(photo).metadata();
+        if (!originalWidth || !originalHeight) {
+            return null;
+        }
+        photo = await sharp(photo).removeAlpha().png().raw().toBuffer();
+        const originalImagePadding: number[] = this.getSizeForSquarePadding(originalWidth, originalHeight);
+        const originalImagePaddedWidth = originalWidth + originalImagePadding[2] + originalImagePadding[3];
+        const originalImagePaddedHeight = originalHeight + originalImagePadding[0] + originalImagePadding[1];
+
         for (let corner = 0; corner < 4; corner++) {
             mat = cv.matFromArray(
                 aiModelOutputSize,
@@ -301,10 +319,21 @@ export class DocumentPreprocessorService {
                 ),
             );
 
-            cv.resize(mat, mat, new cv.Size(paddedWidth, paddedHeight), 0, 0, cv.INTER_LINEAR);
+            cv.resize(mat, mat, new cv.Size(originalImagePaddedWidth, originalImagePaddedHeight), 0, 0, cv.INTER_LINEAR);
             documentCorners.push(this.getCentroidOfMaxContour(mat));
             mat.delete();
         }
+
+        const paddedMat: cv.Mat = cv.matFromArray(originalHeight, originalWidth, cv.CV_8UC3, photo);
+        cv.copyMakeBorder(
+            paddedMat,
+            paddedMat,
+            originalImagePadding[0],
+            originalImagePadding[1],
+            originalImagePadding[2],
+            originalImagePadding[3],
+            cv.BORDER_REPLICATE,
+        );
 
         this.cropAndFixPerspective(paddedMat, paddedMat, documentCorners, imageWidth, imageHeight);
         const extractedDoc = await sharp(paddedMat.data, {
