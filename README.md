@@ -12,23 +12,45 @@ The component diagram of the system is provided below.
 
 ## How to Use ⚙️
 
-To clone and run this application, you will need [Git](https://git-scm.com/) and [Node.js](https://nodejs.org/).
+To clone and run this application, you will need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) and [PostgreSQL](https://www.postgresql.org/download/).
 
 ```
 # Clone the repository
 $ git clone https://github.com/kanitakadusic/si-docflow-server.git
 
-# Go into the root directory
+# Navigate to the project directory
 $ cd si-docflow-server
 
 # Install all dependencies
 $ npm install
 
-# Add .env with appropriate values ​​(.env.example provided)
+# Create a .env file in the project root with required environment variables
+# See ./documentation/env-setup.md for details
 
-# Run the application
+# Compile TypeScript to JavaScript
+$ npm run build
+
+# Load and export environment variables
+$ npm run vars
+
+# Create database tables and insert seed data
+$ npm run seed
+
+# Perform initial setup tasks
+$ npm run bootstrap
+
+# Start the application
+$ npm run serve
+
+# For further development
 $ npm run dev
 ```
+
+## Documentation 📚
+
+- [Environment Variables Setup](./documentation/env-setup.md)
+- [API documentation](https://si-docflow-server.up.railway.app/api-docs/)
+- [Questions and Answers](./documentation/q&a.md)
 
 ## Instructional Videos 🎥
 

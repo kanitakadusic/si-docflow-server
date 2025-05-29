@@ -32,4 +32,4 @@ debug
 
 # Secrets
 .env
-*-credentials.json
+*credentials*
