@@ -1,4 +1,10 @@
 import sharp from 'sharp';
+// debug ->
+// import path, { join } from 'path';
+// import fs from 'fs';
+//
+// import { ROOT } from '../config/env.js';
+// <- debug
 import { IField } from '../types/model.js';
 import { IMappedOcrResultWithImage, IOcrEngine } from '../types/ocr.js';
 import { TesseractService } from './tesseract.service.js';
@@ -12,7 +18,26 @@ export class OcrService {
         ['chatGpt', new ChatGptService()],
     ]);
 
+    // debug ->
+    // private sanitizeFieldName(str: string): string {
+    //     return str
+    //         .normalize('NFD')
+    //         .replace(/[\u0300-\u036f]/g, '')
+    //         .replace(/[^a-zA-Z0-9]/g, '_')
+    //         .replace(/_+/g, '_')
+    //         .replace(/^_|_$/g, '')
+    //         .toLowerCase();
+    // }
+    // <- debug
+
     private async cropFields(image: Buffer, fields: IField[]): Promise<{ field: IField; image: Buffer }[]> {
+        // debug ->
+        // const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        // const outputDir = path.join(ROOT, 'debug', 'ocr_outputs', timestamp);
+        // fs.mkdirSync(outputDir, { recursive: true });
+        // fs.writeFileSync(join(outputDir, 'DOCUMENT.jpeg'), image);
+        // <- debug
+
         return Promise.all(
             fields.map(async (field) => {
                 const cropped = await sharp(image)
@@ -22,8 +47,14 @@ export class OcrService {
                         width: Math.round(field.lower_right[0] - field.upper_left[0]),
                         height: Math.round(field.lower_right[1] - field.upper_left[1]),
                     })
-                    .png()
+                    .jpeg()
                     .toBuffer();
+
+                // debug ->
+                // const outputPath = path.join(outputDir, `${this.sanitizeFieldName(field.name)}.jpeg`);
+                // fs.writeFileSync(outputPath, cropped);
+                // <- debug
+
                 return { field, image: cropped };
             }),
         );
