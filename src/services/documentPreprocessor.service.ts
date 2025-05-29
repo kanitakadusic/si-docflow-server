@@ -35,6 +35,8 @@ export class DocumentPreprocessorService {
      * @returns images of PDF pages
      */
     async convertPdfToImg(pdf: Buffer): Promise<Buffer[]> {
+        console.log(`convertPdfToImg: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+
         const document = await pdfToImg(pdf, { scale: 3 });
         const images: Buffer[] = [];
         for await (const image of document) {
@@ -54,6 +56,8 @@ export class DocumentPreprocessorService {
     // }
 
     async getAiModel(): Promise<ort.InferenceSession> {
+        console.log(`getAiModel: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+
         if (!this.aiModel) {
             this.aiModel = await ort.InferenceSession.create(join(ROOT, 'ai_model', AI_MODEL_NAME));
         }
@@ -97,6 +101,8 @@ export class DocumentPreprocessorService {
     // <- debug
 
     private async padImageToMakeSquare(photo: Buffer, width: number, height: number): Promise<cv.Mat> {
+        console.log(`padImageToMakeSquare: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+
         const mat: cv.Mat = cv.matFromArray(height, width, cv.CV_8UC3, photo);
 
         // adding padding for 2 reasons:
@@ -146,6 +152,8 @@ export class DocumentPreprocessorService {
      * @param inputSize
      */
     private getAiTensorInput(mat: cv.Mat, inputSize: number): ort.Tensor {
+        console.log(`getAiTensorInput: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+
         const pixelArray = mat.data;
         const tensorData = new Float32Array(3 * inputSize * inputSize);
 
@@ -169,6 +177,8 @@ export class DocumentPreprocessorService {
      * @param threshold pixels with values lower than threshold will be treated as 0
      */
     private getCentroidOfMaxContour(mat: cv.Mat, threshold: number = 0.3): cv.Point {
+        console.log(`getCentroidOfMaxContour: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+
         // binarization for better contour finding
         mat.data32F.set(
             mat.data32F.map((val) => {
@@ -223,6 +233,8 @@ export class DocumentPreprocessorService {
         resultWidth: number,
         resultHeight: number,
     ): void {
+        console.log(`cropAndFixPerspective: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+
         const inputPts: cv.Mat = cv.matFromArray(4, 1, cv.CV_32FC2, [
             corners[0].x,
             corners[0].y,
@@ -259,6 +271,8 @@ export class DocumentPreprocessorService {
         imageWidth: number,
         imageHeight: number,
     ): Promise<Buffer | null> {
+        console.log(`extractDocumentFromPhotoWithAi: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+
         const aiModelInputSize = 256;
         const aiModelOutputSize = 128;
 
@@ -266,7 +280,7 @@ export class DocumentPreprocessorService {
         if (!originalWidth || !originalHeight) {
             return null;
         }
-        photo = await sharp(photo).removeAlpha().png().raw().toBuffer();
+        photo = await sharp(photo).removeAlpha().jpeg().raw().toBuffer();
 
         let mat: cv.Mat = await this.padImageToMakeSquare(photo, originalWidth, originalHeight);
         const { width: paddedWidth, height: paddedHeight } = mat.size();
@@ -314,7 +328,7 @@ export class DocumentPreprocessorService {
                 channels: 3,
             },
         })
-            .png()
+            .jpeg()
             .toBuffer();
 
         paddedMat.delete();
@@ -328,13 +342,15 @@ export class DocumentPreprocessorService {
         imageWidth: number,
         imageHeight: number,
     ): Promise<Buffer> {
+        console.log(`prepareDocumentForOcr: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+
         if (this.pdfMimeTypes.includes(mimeType)) {
             document = (await this.convertPdfToImg(document))[0];
             document = await sharp(document)
                 .resize(imageWidth, imageHeight, {
                     fit: 'fill',
                 })
-                .png()
+                .jpeg()
                 .toBuffer();
         } else if (this.imageMimeTypes.includes(mimeType)) {
             const extractedDocument = await this.extractDocumentFromPhotoWithAi(document, imageWidth, imageHeight);

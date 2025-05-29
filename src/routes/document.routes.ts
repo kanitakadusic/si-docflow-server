@@ -3,11 +3,13 @@ import multer from 'multer';
 
 import { DocumentController } from '../controllers/document.controller.js';
 import { AuthMiddleware } from '../middlewares/auth.middleware.js';
+import { FileMiddleware } from '../middlewares/file.middleware.js';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 const ocrController = new DocumentController();
 const authMiddleware = new AuthMiddleware();
+const fileMiddleware = new FileMiddleware();
 
 /**
  * @swagger
@@ -32,7 +34,7 @@ const authMiddleware = new AuthMiddleware();
  *                 description: User submitting the document
  *               machineId:
  *                 type: string
- *                 description: IP address/port (e.g. 192.168.1.10/8080)
+ *                 description: IP address:port (e.g. 192.168.1.10:8080)
  *               documentTypeId:
  *                 type: integer
  *                 description: ID of the document type
@@ -119,11 +121,17 @@ const authMiddleware = new AuthMiddleware();
  *             example:
  *               message: Server error while processing document
  */
-router.post('/process', upload.single('file'), ocrController.process.bind(ocrController));
+router.post(
+    '/process',
+    upload.single('file'),
+    fileMiddleware.resizeImage.bind(fileMiddleware),
+    ocrController.process.bind(ocrController),
+);
 router.post(
     '/process/auth',
     authMiddleware.verifyToken.bind(authMiddleware),
     upload.single('file'),
+    fileMiddleware.resizeImage.bind(fileMiddleware),
     ocrController.process.bind(ocrController),
 );
 
