@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { OcrService } from '../../src/services/ocr.service';
-import { IField } from '../../src/database/models/documentLayout.model';
+import { IField } from '../../src/types/model';
 
 // Mock for sharp
 vi.mock('sharp', () => ({
@@ -64,9 +64,9 @@ describe('OcrService', () => {
         const results = await service.extractFields(dummyImage, fields, mockEngine);
 
         expect(results).toHaveLength(1);
-        expect(results[0].field.name).toBe('field1');
-        expect(results[0].ocrResult.text).toBe('mocked text');
-        expect(results[0].ocrResult.confidence).toBe(0.95);
+        expect(results[0].mappedResult.field.name).toBe('field1');
+        expect(results[0].mappedResult.result.text).toBe('mocked text');
+        expect(results[0].mappedResult.result.confidence).toBe(0.95);
         expect(mockEngine.extract).toHaveBeenCalledTimes(1);
     });
 
@@ -87,7 +87,7 @@ describe('OcrService', () => {
         expect(mockExtract).toHaveBeenCalled();
         expect(mockCleanup).toHaveBeenCalled();
         expect(results).toHaveLength(1);
-        expect(results[0].ocrResult.text).toBe('mocked text');
+        expect(results[0].mappedResult.result.text).toBe('mocked text');
     });
 
     it('should throw error on unsupported OCR engine', async () => {

@@ -1,23 +1,21 @@
 // test/controllers/documentLayout.controller.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach, Mock } from 'vitest';
 import { DocumentLayoutController } from '../../src/controllers/documentLayout.controller';
+import { DocumentLayout } from '../../src/config/db'
 
-vi.mock('../../src/services/documentLayout.service', () => ({
-    DocumentLayoutService: vi.fn().mockImplementation(() => ({
-        getAll: vi.fn(),
-    })),
+vi.mock('../../src/config/db', () => ({
+  DocumentLayout: {
+    findAll: vi.fn(),
+  },
 }));
 
 describe('DocumentLayoutController', () => {
     let controller: DocumentLayoutController;
     let req: any;
     let res: any;
-    let mockService: any;
 
     beforeEach(() => {
         controller = new DocumentLayoutController();
-
-        mockService = (controller as any).documentLayoutService;
 
         req = {};
         res = {
@@ -26,13 +24,17 @@ describe('DocumentLayoutController', () => {
         };
     });
 
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
     it('should return 200 and list of layouts on success', async () => {
         const fakeLayouts = [
             { id: 1, name: 'Layout A' },
             { id: 2, name: 'Layout B' },
         ];
-        mockService.getAll.mockResolvedValue(fakeLayouts);
 
+        (DocumentLayout.findAll as Mock).mockResolvedValue(fakeLayouts);
         await controller.getAll(req, res);
 
         expect(res.status).toHaveBeenCalledWith(200);
@@ -43,8 +45,8 @@ describe('DocumentLayoutController', () => {
     });
 
     it('should return 500 if an error occurs', async () => {
-        mockService.getAll.mockRejectedValue(new Error('DB error'));
 
+        (DocumentLayout.findAll as Mock).mockRejectedValue(new Error('DB failure'));
         await controller.getAll(req, res);
 
         expect(res.status).toHaveBeenCalledWith(500);

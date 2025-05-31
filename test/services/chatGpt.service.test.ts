@@ -1,17 +1,35 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ChatGptService } from '../../src/services/chatGpt.service';
+import { IField } from '../../src/types/model';
+import sharp from 'sharp'; 
 
+// Mock za OpenAI
 vi.mock('openai', () => {
+    const mockCreate = vi.fn();
     return {
         default: vi.fn().mockImplementation(() => ({
             chat: {
                 completions: {
-                    create: vi.fn(),
+                    create: mockCreate,
                 },
             },
         })),
     };
 });
+
+vi.mock('sharp', () => {
+    const sharpInstance = {
+        metadata: vi.fn().mockResolvedValue({ width: 100 }),
+        composite: vi.fn().mockReturnThis(),
+        png: vi.fn().mockReturnThis(),
+        toBuffer: vi.fn().mockResolvedValue(Buffer.from('merged-image')),
+    };
+
+    const sharpMock = vi.fn(() => sharpInstance);
+
+    return { default: sharpMock }; // ← ESM očekuje ovo!
+});
+
 
 describe('ChatGptService', () => {
     let service: ChatGptService;
@@ -19,46 +37,74 @@ describe('ChatGptService', () => {
 
     beforeEach(() => {
         service = new ChatGptService();
-
-        // Izvući instancu mockovane metode
-        const openaiInstance = (ChatGptService as any).openAi;
-        mockCreate = openaiInstance.chat.completions.create;
+        mockCreate = (ChatGptService as any).openAi.chat.completions.create;
     });
 
-    it('should extract text and confidence from GPT response', async () => {
+    it('should extract fields from GPT response', async () => {
+        const crops = [
+            {
+                field: { name: 'field1' } as IField,
+                image: Buffer.from('img1'),
+            },
+            {
+                field: { name: 'field2' } as IField,
+                image: Buffer.from('img2'),
+            },
+        ];
+
         mockCreate.mockResolvedValue({
             choices: [
                 {
                     message: {
-                        content: `{"text": "Example text", "confidence": 0.88}`,
+                        content: JSON.stringify([
+                            { text: 'Text 1', confidence: 0.9 },
+                            { text: 'Text 2', confidence: 0.8 },
+                        ]),
                     },
                 },
             ],
+            usage: {
+                prompt_tokens: 100,
+                completion_tokens: 200,
+            },
         });
 
-        const imageBuffer = Buffer.from('fake-image');
-        const result = await service.extract(imageBuffer);
+        const results = await service.extractFieldsBatch(crops);
 
-        expect(result.text).toBe('Example text');
-        expect(result.confidence).toBe(0.88);
-        expect(mockCreate).toHaveBeenCalledOnce();
+        expect(results).toHaveLength(2);
+        expect(results[0].field.name).toBe('field1');
+        expect(results[0].result.text).toBe('Text 1');
+        expect(results[0].result.confidence).toBe(0.9);
+        expect(results[1].result.text).toBe('Text 2');
+        expect(results[1].result.confidence).toBe(0.8);
+        expect(results[0].result.price).toBeGreaterThan(0);
     });
 
-    it('should return default result on invalid JSON', async () => {
+    it('should return default results on JSON parse error', async () => {
+        const crops = [
+            {
+                field: { name: 'field1' } as IField,
+                image: Buffer.from('img1'),
+            },
+        ];
+
         mockCreate.mockResolvedValue({
             choices: [
                 {
                     message: {
-                        content: `Not a valid JSON`,
+                        content: 'invalid json',
                     },
                 },
             ],
+            usage: null,
         });
 
-        const imageBuffer = Buffer.from('fake-image');
-        const result = await service.extract(imageBuffer);
+        const results = await service.extractFieldsBatch(crops);
 
-        expect(result).toEqual({ text: '', confidence: 0 });
+        expect(results).toHaveLength(1);
+        expect(results[0].result.text).toBe('');
+        expect(results[0].result.confidence).toBe(0);
+        expect(results[0].result.price).toBe(0);
     });
 
     it('startup and cleanup should do nothing', async () => {

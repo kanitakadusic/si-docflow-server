@@ -1,23 +1,21 @@
 // test/controllers/documentType.controller.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach, Mock } from 'vitest';
 import { DocumentTypeController } from '../../src/controllers/documentType.controller';
+import { DocumentType } from '../../src/config/db';
 
-vi.mock('../../src/services/documentType.service', () => ({
-    DocumentTypeService: vi.fn().mockImplementation(() => ({
-        getAll: vi.fn(),
-    })),
+vi.mock('../../src/config/db', () => ({
+  DocumentType: {
+    findAll: vi.fn(),
+  },
 }));
 
 describe('DocumentTypeController', () => {
     let controller: DocumentTypeController;
     let req: any;
     let res: any;
-    let mockService: any;
 
     beforeEach(() => {
         controller = new DocumentTypeController();
-
-        mockService = (controller as any).documentTypeService;
 
         req = {};
         res = {
@@ -26,13 +24,17 @@ describe('DocumentTypeController', () => {
         };
     });
 
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
     it('should return 200 and list of document types on success', async () => {
         const fakeTypes = [
             { id: 1, name: 'Invoice' },
             { id: 2, name: 'Form' },
         ];
-        mockService.getAll.mockResolvedValue(fakeTypes);
 
+        (DocumentType.findAll as Mock).mockResolvedValue(fakeTypes);
         await controller.getAll(req, res);
 
         expect(res.status).toHaveBeenCalledWith(200);
@@ -43,7 +45,7 @@ describe('DocumentTypeController', () => {
     });
 
     it('should return 500 if an error occurs', async () => {
-        mockService.getAll.mockRejectedValue(new Error('Fetch error'));
+      (DocumentType.findAll as Mock).mockRejectedValue(new Error('Fetch error'));
 
         await controller.getAll(req, res);
 
