@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import sharp from 'sharp';
 
 import { OPENAI_API_KEY } from '../config/env.js';
+
 import { IMappedOcrResult, IOcrEngine } from '../types/ocr.js';
 import { IField } from '../types/model.js';
 

@@ -33,6 +33,7 @@ export const OPENAI_API_KEY: string = getEnvVariable('OPENAI_API_KEY');
 export const AI_MODEL_NAME: string = getEnvVariable('AI_MODEL_NAME');
 export const AI_MODEL_DOWNLOAD_URL: string = getEnvVariable('AI_MODEL_DOWNLOAD_URL');
 
+export const STORAGE_LOCATION: string = getEnvVariable('STORAGE_LOCATION');
 export const SUPABASE_URL: string = getEnvVariable('SUPABASE_URL');
 export const SUPABASE_KEY: string = getEnvVariable('SUPABASE_KEY');
 
