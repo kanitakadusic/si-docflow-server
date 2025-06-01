@@ -53,6 +53,7 @@ export class LocalStorageFolder
                 is_active: {
                     type: DataTypes.BOOLEAN,
                     allowNull: false,
+                    defaultValue: true,
                 },
                 path: {
                     type: DataTypes.TEXT,
