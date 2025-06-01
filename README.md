@@ -39,7 +39,6 @@ $ npm install
 #### 2. Configuration File Setup
 
 Create a _.env_ file in the project root with required environment variables. See [env-setup.md](./documentation/env-setup.md) for details.  
-<br>
 
 #### 3. Code Build & Database Seed
 ```
