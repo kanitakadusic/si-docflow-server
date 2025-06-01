@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { DocumentPreprocessorService } from '../services/documentPreprocessor.service.js';
 import { OcrService } from '../services/ocr.service.js';
 import { IField } from '../types/model.js';
-import { IMappedOcrResult, IMappedOcrResultFinalized, IMappedOcrResultWithImage } from '../types/ocr.js';
+import { IMappedOcrResult, IMappedOcrResultFinalized, IMappedOcrResultWithCrop } from '../types/ocr.js';
 import {
     AiProvider,
     DocumentLayout,
@@ -12,7 +12,7 @@ import {
     ExternalFtpEndpoint,
     LayoutImage,
     LocalStorageFolder,
-    ProcessingRequestBillingLog,
+    ProcessingRequestsBillingLog,
     ProcessingResultsTriplet,
     ProcessingRule,
     ProcessingRuleDestination,
@@ -91,40 +91,68 @@ export class DocumentController {
                 return;
             }
 
+            const aiProviders = await Promise.all(
+                engines
+                    .toString()
+                    .split(',')
+                    .map((engine) => AiProvider.findOne({ where: { name: engine } })),
+            );
+            if (aiProviders.every((aiProvider) => aiProvider === null)) {
+                res.status(404).json({
+                    message: `Provided OCR engines are not supported`,
+                });
+                return;
+            }
+
             const preprocessedDocument: Buffer = await this.documentPreprocessorService.prepareDocumentForOcr(
                 file.buffer,
                 file.mimetype,
                 Math.round(layoutImage.dataValues.width),
                 Math.round(layoutImage.dataValues.height),
             );
-
             const fields: IField[] = documentLayout.getFields();
 
-            const ocrEngines: string[] = engines.toString().split(',');
-            const results = [];
+            const finalResults = [];
 
-            for (const ocrEngine of ocrEngines) {
-                const result = await this.ocrService.runOcr(preprocessedDocument, fields, ocrEngine, lang.toString());
-                const mappedResults = result.map((result) => result.mappedResult);
-
-                const aiProvider = await AiProvider.findOne({
-                    where: {
-                        name: ocrEngine,
-                    },
-                });
-                if (ocrEngine != 'tesseract') {
-                    await this.logProcessingRequestBilling(aiProvider!, documentType, mappedResults, file.originalname);
+            for (const aiProvider of aiProviders) {
+                if (!aiProvider) {
+                    continue;
                 }
 
-                // For now if user does not respond data remains in database,
-                // Database will have to get periodically cleaned, where user_data = ""
-                const tripletIds = await this.logProcessingResultTripletsImageAndAiData(result, aiProvider!);
+                const resultsWithCrop: IMappedOcrResultWithCrop[] = await this.ocrService.runOcr(
+                    preprocessedDocument,
+                    fields,
+                    aiProvider.dataValues.name,
+                    lang.toString(),
+                );
 
-                results.push({ engine: ocrEngine, ocr: mappedResults, tripletIds: tripletIds });
+                if (aiProvider.dataValues.name != 'tesseract') {
+                    await ProcessingRequestsBillingLog.create({
+                        document_type_id: documentType.id,
+                        ai_provider_id: aiProvider.id,
+                        price: resultsWithCrop.reduce((sum, resultWithCrop) => sum + resultWithCrop.result.price, 0),
+                    });
+                }
+
+                const tripletIds = await this.logImageAndAiData(resultsWithCrop, aiProvider.id);
+
+                finalResults.push({
+                    engine: aiProvider.dataValues.name,
+                    ocr: resultsWithCrop.map(({ fieldWithCrop, result }) => ({
+                        field: {
+                            name: fieldWithCrop.name,
+                            upper_left: fieldWithCrop.upper_left,
+                            lower_right: fieldWithCrop.lower_right,
+                            is_multiline: fieldWithCrop.is_multiline,
+                        },
+                        result,
+                    })) as IMappedOcrResult[],
+                    tripletIds,
+                });
             }
 
             res.status(200).json({
-                data: results,
+                data: finalResults,
                 message: 'Document has been successfully processed',
             });
         } catch (error) {
@@ -148,7 +176,7 @@ export class DocumentController {
                 return;
             }
 
-            await this.logProcessingResultTripletsUserData(json.ocr as IMappedOcrResultFinalized[], json.tripletIds);
+            await this.logUserData(json.ocr as IMappedOcrResultFinalized[], json.tripletIds);
 
             const processingRules = await ProcessingRule.findAll({
                 where: { document_type_id: json.document_type_id },
@@ -215,54 +243,24 @@ export class DocumentController {
         }
     }
 
-    private async logProcessingRequestBilling(
-        aiProvider: AiProvider,
-        documentType: DocumentType,
-        mappedResults: IMappedOcrResult[],
-        fileName: string,
-    ): Promise<void> {
-        const totalPrice = mappedResults.reduce((sum, mappedResult) => sum + mappedResult.result.price, 0);
-
-        await ProcessingRequestBillingLog.create({
-            document_type_id: documentType.id,
-            file_name: fileName,
-            ai_provider_id: aiProvider.id,
-            price: totalPrice,
-        });
-    }
-
-    /**
-     * Saves the Image data and Ai data from ocr before sending to
-     * user for finalization.
-     * Returns an array of ids pointing to the rows where the
-     * former data is saved.
-     */
-    private async logProcessingResultTripletsImageAndAiData(
-        ocrResults: IMappedOcrResultWithImage[],
-        aiProvider: AiProvider,
-    ): Promise<number[]> {
+    private async logImageAndAiData(results: IMappedOcrResultWithCrop[], aiProviderId: number): Promise<number[]> {
         const tripletIds = [];
-
-        for (const ocrResult of ocrResults) {
+        for (const result of results) {
             const triplet = await ProcessingResultsTriplet.create({
-                image: ocrResult.image,
-                ai_data: ocrResult.mappedResult.result.text,
-                user_data: '', // might be better to make nullable in database
-                ai_provider_id: aiProvider.id,
+                image: result.fieldWithCrop.crop,
+                ai_data: result.result.text,
+                user_data: '',
+                ai_provider_id: aiProviderId,
             });
             tripletIds.push(triplet.id);
         }
-
         return tripletIds;
     }
 
-    private async logProcessingResultTripletsUserData(
-        ocrResultsFinalized: IMappedOcrResultFinalized[],
-        tripletIds: number[],
-    ) {
+    private async logUserData(results: IMappedOcrResultFinalized[], tripletIds: number[]) {
         for (let i = 0; i < tripletIds.length; i++) {
             await ProcessingResultsTriplet.update(
-                { user_data: ocrResultsFinalized[i].result.text },
+                { user_data: results[i].result.text },
                 {
                     where: {
                         id: tripletIds[i],

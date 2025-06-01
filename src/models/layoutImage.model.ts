@@ -8,6 +8,7 @@ import {
     NonAttribute,
     Sequelize,
 } from 'sequelize';
+
 import { DocumentLayout } from './documentLayout.model.js';
 
 export class LayoutImage extends Model<InferAttributes<LayoutImage>, InferCreationAttributes<LayoutImage>> {

@@ -1,25 +1,24 @@
-import { 
-    CreationOptional, 
-    ForeignKey, 
-    InferAttributes, 
-    InferCreationAttributes, 
-    Model, 
-    Sequelize, 
-    DataTypes, 
+import {
+    Association,
+    CreationOptional,
+    DataTypes,
+    ForeignKey,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
     NonAttribute,
-    Association
-} from "sequelize";
+    Sequelize,
+} from 'sequelize';
 
-import { DocumentType } from "./documentType.model.js";
-import { AiProvider } from "./aiProvider.model.js";
+import { DocumentType } from './documentType.model.js';
+import { AiProvider } from './aiProvider.model.js';
 
-export class ProcessingRequestBillingLog extends Model<
-    InferAttributes<ProcessingRequestBillingLog>,
-    InferCreationAttributes<ProcessingRequestBillingLog>
+export class ProcessingRequestsBillingLog extends Model<
+    InferAttributes<ProcessingRequestsBillingLog>,
+    InferCreationAttributes<ProcessingRequestsBillingLog>
 > {
     declare id: CreationOptional<number>;
     declare document_type_id: ForeignKey<DocumentType['id']>;
-    declare file_name: string;
     declare ai_provider_id: ForeignKey<AiProvider['id']>;
     declare price: number;
 
@@ -27,8 +26,8 @@ export class ProcessingRequestBillingLog extends Model<
     declare aiProvider?: NonAttribute<AiProvider>;
 
     declare static associations: {
-        documentType: Association<ProcessingRequestBillingLog, DocumentType>;
-        aiProvider: Association<ProcessingRequestBillingLog, AiProvider>;
+        documentType: Association<ProcessingRequestsBillingLog, DocumentType>;
+        aiProvider: Association<ProcessingRequestsBillingLog, AiProvider>;
     };
 
     public static initialize(sequelize: Sequelize) {
@@ -42,26 +41,10 @@ export class ProcessingRequestBillingLog extends Model<
                 document_type_id: {
                     type: DataTypes.INTEGER,
                     allowNull: false,
-                    references: {
-                        model: DocumentType,
-                        key: 'id',
-                    },
-                    onUpdate: 'CASCADE',
-                    onDelete: 'CASCADE',
-                },
-                file_name: {
-                    type: DataTypes.STRING,
-                    allowNull: false,
                 },
                 ai_provider_id: {
                     type: DataTypes.INTEGER,
                     allowNull: false,
-                    references: {
-                        model: AiProvider,
-                        key: 'id',
-                    },
-                    onUpdate: 'CASCADE',
-                    onDelete: 'CASCADE',
                 },
                 price: {
                     type: DataTypes.DOUBLE,
@@ -72,20 +55,19 @@ export class ProcessingRequestBillingLog extends Model<
                 sequelize,
                 modelName: 'ProcessingRequestsBillingLog',
                 tableName: 'processing_requests_billing_logs',
-                freezeTableName: true,
             },
         );
     }
 
     public static associate() {
-        this.hasOne(DocumentType, {
-            foreignKey: 'id',
-            as: 'documentType'
+        this.belongsTo(DocumentType, {
+            foreignKey: 'document_type_id',
+            as: 'documentType',
         });
 
-        this.hasOne(AiProvider, {
-            foreignKey: 'id',
-            as: 'aiProvider'
+        this.belongsTo(AiProvider, {
+            foreignKey: 'ai_provider_id',
+            as: 'aiProvider',
         });
     }
 

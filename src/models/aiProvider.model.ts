@@ -1,27 +1,28 @@
-import { 
+import {
     Association,
-    CreationOptional, 
-    DataTypes, 
-    InferAttributes, 
-    InferCreationAttributes, 
-    Model, 
-    NonAttribute, 
-    Sequelize 
+    CreationOptional,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    NonAttribute,
+    Sequelize,
 } from 'sequelize';
-import { ProcessingRequestBillingLog } from './processingRequestsBillingLog.model.js';
+
+import { ProcessingRequestsBillingLog } from './processingRequestsBillingLog.model.js';
 import { ProcessingResultsTriplet } from './processingResultsTriplet.model.js';
 
 export class AiProvider extends Model<InferAttributes<AiProvider>, InferCreationAttributes<AiProvider>> {
     declare id: CreationOptional<number>;
     declare name: string;
 
-    declare processingRequestsBillingLogs?: NonAttribute<ProcessingRequestBillingLog[]>;
+    declare processingRequestsBillingLogs?: NonAttribute<ProcessingRequestsBillingLog[]>;
     declare processingResultsTriplets?: NonAttribute<ProcessingResultsTriplet[]>;
 
     declare static associations: {
-        processingRequestsBillingLogs: Association<AiProvider, ProcessingRequestBillingLog>;
+        processingRequestsBillingLogs: Association<AiProvider, ProcessingRequestsBillingLog>;
         processingResultsTriplets: Association<AiProvider, ProcessingResultsTriplet>;
-    }
+    };
 
     public static initialize(sequelize: Sequelize) {
         this.init(
@@ -32,8 +33,9 @@ export class AiProvider extends Model<InferAttributes<AiProvider>, InferCreation
                     primaryKey: true,
                 },
                 name: {
-                    type: DataTypes.STRING,
+                    type: DataTypes.TEXT,
                     allowNull: false,
+                    unique: true,
                 },
             },
             {
@@ -46,13 +48,14 @@ export class AiProvider extends Model<InferAttributes<AiProvider>, InferCreation
     }
 
     public static associate() {
-        this.belongsTo(ProcessingRequestBillingLog, {
-            foreignKey: 'id',
-            as: 'processingRequestBillingLogs'
+        this.hasMany(ProcessingRequestsBillingLog, {
+            foreignKey: 'ai_provider_id',
+            as: 'processingRequestsBillingLogs',
         });
-        this.belongsTo(ProcessingResultsTriplet, {
-            foreignKey: 'id',
-            as: 'processingResultTriplets',
+
+        this.hasMany(ProcessingResultsTriplet, {
+            foreignKey: 'ai_provider_id',
+            as: 'processingResultsTriplets',
         });
     }
 
