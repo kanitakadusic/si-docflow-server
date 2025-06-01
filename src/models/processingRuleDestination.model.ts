@@ -9,6 +9,7 @@ import {
     NonAttribute,
     Sequelize,
 } from 'sequelize';
+
 import { ProcessingRule } from './processingRule.model.js';
 import { LocalStorageFolder } from './localStorageFolder.model.js';
 import { ExternalApiEndpoint } from './externalApiEndpoint.model.js';
@@ -23,7 +24,7 @@ export class ProcessingRuleDestination extends Model<
     declare local_storage_folder_id: ForeignKey<LocalStorageFolder['id']>;
     declare external_api_endpoint_id: ForeignKey<ExternalApiEndpoint['id']>;
     declare external_ftp_endpoint_id: ForeignKey<ExternalFtpEndpoint['id']>;
-    declare created_by: number;
+    declare created_by: number | null;
     declare updated_by: number | null;
 
     declare processingRule?: NonAttribute<ProcessingRule>;
@@ -64,7 +65,7 @@ export class ProcessingRuleDestination extends Model<
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,

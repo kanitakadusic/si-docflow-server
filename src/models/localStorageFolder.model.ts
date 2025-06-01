@@ -9,20 +9,23 @@ import {
     Sequelize,
 } from 'sequelize';
 
+import { STORAGE_LOCATION } from '../config/env.js';
+
 import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
 import { IForwarder } from '../types/model.js';
-import { supabase } from '../config/supabaseClient.js';
+import { saveToFilesystem } from '../services/storages/filesystem.service.js';
+import { saveToSupabase } from '../services/storages/supabase.service.js';
 
 export class LocalStorageFolder
     extends Model<InferAttributes<LocalStorageFolder>, InferCreationAttributes<LocalStorageFolder>>
     implements IForwarder
 {
     declare id: CreationOptional<number>;
-    declare title: string | null;
+    declare title: string;
     declare description: string | null;
-    declare path: string;
     declare is_active: boolean;
-    declare created_by: number;
+    declare path: string;
+    declare created_by: number | null;
     declare updated_by: number | null;
 
     declare processingRuleDestinations?: NonAttribute<ProcessingRuleDestination[]>;
@@ -40,25 +43,25 @@ export class LocalStorageFolder
                     primaryKey: true,
                 },
                 title: {
-                    type: DataTypes.STRING,
-                    allowNull: true,
+                    type: DataTypes.TEXT,
+                    allowNull: false,
                 },
                 description: {
-                    type: DataTypes.STRING,
+                    type: DataTypes.TEXT,
                     allowNull: true,
-                },
-                path: {
-                    type: DataTypes.STRING,
-                    allowNull: false,
                 },
                 is_active: {
                     type: DataTypes.BOOLEAN,
                     allowNull: false,
                     defaultValue: true,
                 },
+                path: {
+                    type: DataTypes.TEXT,
+                    allowNull: false,
+                },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,
@@ -82,24 +85,24 @@ export class LocalStorageFolder
 
     public static hook() {}
 
-    async send(json: object) {
+    async send(json: object): Promise<boolean> {
+        if (!this.is_active) {
+            return false;
+        }
         try {
-            const buffer = Buffer.from(JSON.stringify(json, null, 2), 'utf-8');
-            const filename = `${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
-            const fullPath = `${this.path}/${filename}`;
+            const location = (STORAGE_LOCATION || '').toLowerCase();
+            const data = JSON.stringify(json, null, 2);
 
-            const { error } = await supabase.storage.from('finalized-documents').upload(fullPath, buffer, {
-                contentType: 'application/json',
-            });
-
-            if (error) {
-                console.error('Local storage folder failure:', error);
-                return false;
+            if (location === 'filesystem') {
+                return saveToFilesystem(data, this.path);
+            } else if (location === 'supabase') {
+                return saveToSupabase(data, this.path);
             }
 
-            return true;
+            console.error(`Unsupported storage location: ${STORAGE_LOCATION}`);
+            return false;
         } catch (error) {
-            console.error('Local storage folder failure:', error);
+            console.error('Storage stringify failure:', error);
             return false;
         }
     }

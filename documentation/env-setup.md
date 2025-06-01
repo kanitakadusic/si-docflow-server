@@ -129,9 +129,23 @@ https://drive.usercontent.google.com/download?id=1IlbLPkCv-TdaBLOPh_4J97P1_KHYYJ
 https://drive.usercontent.google.com/download?id=14vUH77v6yGg7zFctUgcT6BzV5Iisg4Dl&export=download&authuser=0
 ```
 
+### STORAGE_LOCATION
+
+Once a document has been finalized - processed by AI tools and confirmed by the user - it can be distributed through various channels (e.g., API, FTP, or storage). The `STORAGE_LOCATION` variable defines where finalized documents will be stored. Two storage options are currently supported (with corresponding `STORAGE_LOCATION` values shown below):
+
+- Local file system of the machine running the application:
+```
+filesystem
+```
+
+- [Supabase](https://supabase.com/) bucket (cloud storage), where a bucket named _finalized-documents_ needs to be created:
+```
+supabase
+```
+
 ### SUPABASE_URL
 
-In the current implementation, Supabase buckets are used as local storage for processed documents. Therefore, the `SUPABASE_URL` variable represents the base URL of the Supabase project.
+The `SUPABASE_URL` variable is required if `STORAGE_LOCATION` is set to _supabase_. It defines the base URL of the Supabase project.
 
 To obtain the `SUPABASE_URL`, the following steps need to be completed:
 
@@ -148,7 +162,7 @@ https://PROJECT_ID.supabase.co
 
 ### SUPABASE_KEY
 
-The `SUPABASE_KEY` variable serves as the authentication key required to access the Supabase project. It is also used for managing local storage of processed documents.
+The `SUPABASE_KEY` variable is also required when using Supabase storage. It provides authentication for accessing your Supabase project.
 
 To obtain the `SUPABASE_KEY`, the following steps need to be completed:
 

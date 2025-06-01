@@ -12,8 +12,19 @@ The component diagram of the system is provided below.
 
 ## How to Use ⚙️
 
-To clone and run this application, you will need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) and [PostgreSQL](https://www.postgresql.org/download/).
+> To clone and run this application, you will need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) and [PostgreSQL](https://www.postgresql.org/download/).
 
+### Option 1: Using processing server independently
+
+To set up and run the application independently, follow steps **1** through **4** below. After initial setup, step **5** covers ongoing development.
+
+### Option 2: Using admin dashboard together with processing server
+
+For a complete setup, first follow the instructions in the [si-docflow-admin](https://github.com/HarisMalisevic/si-docflow-admin) repository. Then, proceed with steps **1**, **2** and **5** below for the processing server.
+
+---
+
+#### 1. Environment Setup & Dependency Installation
 ```
 # Clone the repository
 $ git clone https://github.com/kanitakadusic/si-docflow-server.git
@@ -23,10 +34,14 @@ $ cd si-docflow-server
 
 # Install all dependencies
 $ npm install
+```
 
-# Create a .env file in the project root with required environment variables
-# See ./documentation/env-setup.md for details
+#### 2. Configuration File Setup
 
+Create a _.env_ file in the project root with required environment variables. See [env-setup.md](./documentation/env-setup.md) for details.  
+
+#### 3. Code Build & Database Seed
+```
 # Compile TypeScript to JavaScript
 $ npm run build
 
@@ -35,13 +50,19 @@ $ npm run vars
 
 # Create database tables and insert seed data
 $ npm run seed
+```
 
+#### 4. Bootstrap & Application Startup
+```
 # Perform initial setup tasks
 $ npm run bootstrap
 
 # Start the application
 $ npm run serve
+```
 
+#### 5. Development
+```
 # For further development
 $ npm run dev
 ```

@@ -10,6 +10,7 @@ import {
     NonAttribute,
     Sequelize,
 } from 'sequelize';
+
 import { DocumentType } from './documentType.model.js';
 import { LayoutImage } from './layoutImage.model.js';
 import { IField } from '../types/model.js';

@@ -8,26 +8,26 @@ import {
     NonAttribute,
     Sequelize,
 } from 'sequelize';
-import { Client } from 'basic-ftp';
-import { Readable } from 'stream';
 
 import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
 import { IForwarder } from '../types/model.js';
+import { uploadToFtp } from '../services/ftp.service.js';
 
 export class ExternalFtpEndpoint
     extends Model<InferAttributes<ExternalFtpEndpoint>, InferCreationAttributes<ExternalFtpEndpoint>>
     implements IForwarder
 {
     declare id: CreationOptional<number>;
-    declare title: string | null;
+    declare title: string;
     declare description: string | null;
+    declare is_active: boolean;
     declare host: string;
     declare port: number;
     declare username: string;
     declare password: string;
     declare secure: boolean;
     declare path: string;
-    declare created_by: number;
+    declare created_by: number | null;
     declare updated_by: number | null;
 
     declare processingRuleDestinations?: NonAttribute<ProcessingRuleDestination[]>;
@@ -46,11 +46,15 @@ export class ExternalFtpEndpoint
                 },
                 title: {
                     type: DataTypes.TEXT,
-                    allowNull: true,
+                    allowNull: false,
                 },
                 description: {
                     type: DataTypes.TEXT,
                     allowNull: true,
+                },
+                is_active: {
+                    type: DataTypes.BOOLEAN,
+                    allowNull: false,
                 },
                 host: {
                     type: DataTypes.TEXT,
@@ -82,7 +86,7 @@ export class ExternalFtpEndpoint
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,
@@ -107,27 +111,22 @@ export class ExternalFtpEndpoint
     public static hook() {}
 
     async send(json: object): Promise<boolean> {
-        const client = new Client();
+        if (!this.is_active) {
+            return false;
+        }
         try {
-            await client.access({
+            return uploadToFtp({
                 host: this.host,
                 port: this.port,
                 user: this.username,
                 password: this.password,
                 secure: this.secure,
+                path: this.path,
+                content: JSON.stringify(json, null, 2),
             });
-
-            const stream = Readable.from(Buffer.from(JSON.stringify(json, null, 2), 'utf-8'));
-            const filename = `${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
-
-            await client.ensureDir(this.path);
-            await client.uploadFrom(stream, filename);
-            return true;
         } catch (error) {
-            console.error('External FTP endpoint failure:', error);
+            console.error('FTP stringify failure:', error);
             return false;
-        } finally {
-            client.close();
         }
     }
 }

@@ -1,6 +1,6 @@
 import { createWorker, Worker } from 'tesseract.js';
 
-import { IOcrEngine, IOcrResult } from '../types/ocr.js';
+import { IOcrEngine, IOcrResult } from '../../types/ocr.js';
 
 export class TesseractService implements IOcrEngine {
     private worker: Worker | null = null;

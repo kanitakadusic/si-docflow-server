@@ -4,7 +4,20 @@ import type { Model, ModelStatic } from 'sequelize';
 
 import { ROOT } from './env.js';
 
-import { AiProvider, DocumentLayout, DocumentType, LayoutImage, sequelize } from './db.js';
+import {
+    AccessRight,
+    AiProvider,
+    DocumentLayout,
+    DocumentType,
+    ExternalApiEndpoint,
+    ExternalFtpEndpoint,
+    LayoutImage,
+    LocalStorageFolder,
+    ProcessingRule,
+    ProcessingRuleDestination,
+    sequelize,
+} from './db.js';
+import { layoutImageSeed } from './layoutImageSeed.js';
 
 async function loadJsonFromFile(filePath: string) {
     const data = await readFile(filePath, 'utf-8');
@@ -22,6 +35,21 @@ async function seed<T extends Model>(fileName: string, model: ModelStatic<T>) {
     console.log(`- ${fileName} seeding done`);
 }
 
+async function seedLayoutImage(): Promise<void> {
+    await Promise.all(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        layoutImageSeed.map((record: any) =>
+            LayoutImage.create({
+                id: record.id,
+                image: Buffer.from(record.image_base64, 'base64'),
+                width: record.width,
+                height: record.height,
+            }),
+        ),
+    );
+    console.log(`- layoutImage seeding done`);
+}
+
 sequelize
     .authenticate()
     .then(() => {
@@ -29,10 +57,16 @@ sequelize
         return sequelize.sync();
     })
     .then(async () => {
-        await seed('layoutImage', LayoutImage);
+        await seedLayoutImage();
         await seed('documentLayout', DocumentLayout);
         await seed('documentType', DocumentType);
         await seed('aiProvider', AiProvider);
+        await seed('accessRight', AccessRight);
+        await seed('localStorageFolder', LocalStorageFolder);
+        await seed('externalApiEndpoint', ExternalApiEndpoint);
+        await seed('externalFtpEndpoint', ExternalFtpEndpoint);
+        await seed('processingRule', ProcessingRule);
+        await seed('processingRuleDestination', ProcessingRuleDestination);
 
         console.log('Database models successfully synchronized');
     })

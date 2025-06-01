@@ -33,3 +33,6 @@ debug
 # Secrets
 .env
 *credentials*
+
+# Other
+finalized_documents
