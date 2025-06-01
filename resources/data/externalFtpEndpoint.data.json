@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "title": "External FTP Endpoint",
+    "description": "This FTP endpoint is provided as an example, even though the FTP server is not active.",
+    "is_active": true,
+    "host": "127.0.0.1",
+    "port": 21,
+    "username": "username",
+    "password": "password",
+    "secure": false,
+    "path": "/"
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "title": "External API Endpoint",
+    "description": "This API endpoint is active on the processing server as an example.",
+    "is_active": true,
+    "method": "POST",
+    "base_url": "http://localhost:4000/",
+    "route": "externalApiEndpoint/",
+    "params": "{}",
+    "headers": "{\"Content-Type\":\"application/json\"}",
+    "timeout": 5000
+  }
+]

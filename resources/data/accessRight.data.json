@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "name": "Access Right",
+    "description": "This is a sample record.",
+    "is_active": true,
+    "token": "$2b$10$/mc57/EeLjDl1l8BXwov6uLklFLU0Zb1h5Sggy0E5usnA5u8GRKUW"
+  }
+]
