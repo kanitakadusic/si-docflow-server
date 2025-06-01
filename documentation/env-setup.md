@@ -131,14 +131,14 @@ https://drive.usercontent.google.com/download?id=14vUH77v6yGg7zFctUgcT6BzV5Iisg4
 
 ### STORAGE_LOCATION
 
-After a document has been finalized - meaning it has been processed by the AI tools and confirmed by the user - it can be distributed through various channels (e.g., API, FTP, or storage). The `STORAGE_LOCATION` variable defines where finalized documents will be stored. Two storage options are currently supported (with corresponding `STORAGE_LOCATION` values shown below):
+Once a document has been finalized - processed by AI tools and confirmed by the user - it can be distributed through various channels (e.g., API, FTP, or storage). The `STORAGE_LOCATION` variable defines where finalized documents will be stored. Two storage options are currently supported (with corresponding `STORAGE_LOCATION` values shown below):
 
 - Local file system of the machine running the application:
 ```
 filesystem
 ```
 
-- [Supabase](https://supabase.com/) bucket (cloud storage):
+- [Supabase](https://supabase.com/) bucket (cloud storage), where a bucket named _finalized-documents_ needs to be created:
 ```
 supabase
 ```
