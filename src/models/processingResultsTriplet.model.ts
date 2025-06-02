@@ -1,18 +1,21 @@
-import { 
-    CreationOptional, 
-    ForeignKey, 
-    InferAttributes, 
-    InferCreationAttributes, 
-    Model, 
-    Sequelize, 
-    DataTypes, 
+import {
+    Association,
+    CreationOptional,
+    DataTypes,
+    ForeignKey,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
     NonAttribute,
-    Association
-} from "sequelize";
+    Sequelize,
+} from 'sequelize';
 
-import { AiProvider } from "./aiProvider.model.js";
+import { AiProvider } from './aiProvider.model.js';
 
-export class ProcessingResultsTriplet extends Model<InferAttributes<ProcessingResultsTriplet>, InferCreationAttributes<ProcessingResultsTriplet>> {
+export class ProcessingResultsTriplet extends Model<
+    InferAttributes<ProcessingResultsTriplet>,
+    InferCreationAttributes<ProcessingResultsTriplet>
+> {
     declare id: CreationOptional<number>;
     declare image: Buffer;
     declare ai_data: string;
@@ -23,52 +26,45 @@ export class ProcessingResultsTriplet extends Model<InferAttributes<ProcessingRe
 
     declare static associations: {
         aiProvider: Association<ProcessingResultsTriplet, AiProvider>;
-    }
+    };
 
     public static initialize(sequelize: Sequelize) {
         this.init(
-        {
-            id: {
-                type: DataTypes.INTEGER,
-                autoIncrement: true,
-                primaryKey: true,
-            },
-            image: {
-                type: DataTypes.BLOB("medium"), // Medium - up to 16MB
-                allowNull: false,
-            },
-            ai_data: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
-            user_data: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
-            ai_provider_id: {
-                type: DataTypes.INTEGER,
-                allowNull: true,
-                references: {
-                    model: AiProvider, 
-                    key: "id",
+            {
+                id: {
+                    type: DataTypes.INTEGER,
+                    autoIncrement: true,
+                    primaryKey: true,
                 },
-                onUpdate: "CASCADE",
-                onDelete: "CASCADE",
+                image: {
+                    type: DataTypes.BLOB('medium'),
+                    allowNull: false,
+                },
+                ai_data: {
+                    type: DataTypes.TEXT,
+                    allowNull: false,
+                },
+                user_data: {
+                    type: DataTypes.TEXT,
+                    allowNull: false,
+                },
+                ai_provider_id: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                },
             },
-        },
-        {
-            sequelize,
-            modelName: "ProcessingResultsTriplet",
-            tableName: "processing_results_triplets",
-            freezeTableName: true,
-        }
-    );
+            {
+                sequelize,
+                modelName: 'ProcessingResultsTriplet',
+                tableName: 'processing_results_triplets',
+            },
+        );
     }
 
     public static associate() {
-        this.hasOne(AiProvider, {
-            foreignKey: 'id',
-            as: 'aiProvider'
+        this.belongsTo(AiProvider, {
+            foreignKey: 'ai_provider_id',
+            as: 'aiProvider',
         });
     }
 

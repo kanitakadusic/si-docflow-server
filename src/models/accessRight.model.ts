@@ -2,11 +2,11 @@ import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, 
 
 export class AccessRight extends Model<InferAttributes<AccessRight>, InferCreationAttributes<AccessRight>> {
     declare id: CreationOptional<number>;
-    declare token: string;
-    declare is_active: boolean;
     declare name: string;
     declare description: string | null;
-    declare created_by: number;
+    declare is_active: boolean;
+    declare token: string;
+    declare created_by: number | null;
     declare updated_by: number | null;
 
     public static initialize(sequelize: Sequelize) {
@@ -17,15 +17,6 @@ export class AccessRight extends Model<InferAttributes<AccessRight>, InferCreati
                     autoIncrement: true,
                     primaryKey: true,
                 },
-                token: {
-                    type: DataTypes.TEXT,
-                    allowNull: false,
-                    unique: true,
-                },
-                is_active: {
-                    type: DataTypes.BOOLEAN,
-                    allowNull: false,
-                },
                 name: {
                     type: DataTypes.TEXT,
                     allowNull: false,
@@ -34,9 +25,18 @@ export class AccessRight extends Model<InferAttributes<AccessRight>, InferCreati
                     type: DataTypes.TEXT,
                     allowNull: true,
                 },
+                is_active: {
+                    type: DataTypes.BOOLEAN,
+                    allowNull: false,
+                },
+                token: {
+                    type: DataTypes.TEXT,
+                    allowNull: false,
+                    unique: true,
+                },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,

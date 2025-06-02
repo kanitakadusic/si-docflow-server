@@ -9,6 +9,7 @@ import {
     NonAttribute,
     Sequelize,
 } from 'sequelize';
+
 import { DocumentType } from './documentType.model.js';
 import { ProcessingRuleDestination } from './processingRuleDestination.model.js';
 
@@ -16,9 +17,9 @@ export class ProcessingRule extends Model<InferAttributes<ProcessingRule>, Infer
     declare id: CreationOptional<number>;
     declare title: string;
     declare description: string | null;
-    declare document_type_id: ForeignKey<DocumentType['id']>;
     declare is_active: boolean;
-    declare created_by: number;
+    declare document_type_id: ForeignKey<DocumentType['id']>;
+    declare created_by: number | null;
     declare updated_by: number | null;
 
     declare documentType?: NonAttribute<DocumentType>;
@@ -38,11 +39,11 @@ export class ProcessingRule extends Model<InferAttributes<ProcessingRule>, Infer
                     primaryKey: true,
                 },
                 title: {
-                    type: DataTypes.STRING,
+                    type: DataTypes.TEXT,
                     allowNull: false,
                 },
                 description: {
-                    type: DataTypes.STRING,
+                    type: DataTypes.TEXT,
                     allowNull: true,
                 },
                 document_type_id: {
@@ -56,7 +57,7 @@ export class ProcessingRule extends Model<InferAttributes<ProcessingRule>, Infer
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,
@@ -73,7 +74,7 @@ export class ProcessingRule extends Model<InferAttributes<ProcessingRule>, Infer
 
     public static associate() {
         this.belongsTo(DocumentType, {
-            foreignKey: 'id',
+            foreignKey: 'document_type_id',
             as: 'documentType',
         });
 

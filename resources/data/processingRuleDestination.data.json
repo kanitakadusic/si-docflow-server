@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "processing_rule_id": 1,
+    "local_storage_folder_id": 1,
+    "external_api_endpoint_id": null,
+    "external_ftp_endpoint_id": null
+  },
+  {
+    "id": 2,
+    "processing_rule_id": 1,
+    "local_storage_folder_id": null,
+    "external_api_endpoint_id": 1,
+    "external_ftp_endpoint_id": null
+  },
+  {
+    "id": 3,
+    "processing_rule_id": 1,
+    "local_storage_folder_id": null,
+    "external_api_endpoint_id": null,
+    "external_ftp_endpoint_id": 1
+  }
+]

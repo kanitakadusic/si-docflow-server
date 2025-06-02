@@ -1,4 +1,4 @@
-import path, { join } from 'path';
+import { join } from 'path';
 import fs from 'fs';
 import { Downloader } from 'nodejs-file-downloader';
 
@@ -6,11 +6,11 @@ import { AI_MODEL_DOWNLOAD_URL, AI_MODEL_NAME, GOOGLE_CREDENTIALS_BASE64, ROOT }
 
 import { sequelize } from './db.js';
 
-if (!fs.existsSync(path.join(ROOT, 'google-credentials.json'))) {
+if (!fs.existsSync(join(ROOT, 'google-credentials.json'))) {
     try {
         const buffer = Buffer.from(GOOGLE_CREDENTIALS_BASE64, 'base64');
 
-        fs.writeFileSync(path.join(ROOT, 'google-credentials.json'), buffer);
+        fs.writeFileSync(join(ROOT, 'google-credentials.json'), buffer);
         console.log('Google credentials successfully prepared');
     } catch (error) {
         console.error('Failed to prepare Google credentials:', error);
@@ -18,14 +18,14 @@ if (!fs.existsSync(path.join(ROOT, 'google-credentials.json'))) {
     }
 }
 
-if (!fs.existsSync(path.join(ROOT, 'ai_model'))) {
-    fs.mkdirSync(path.join(ROOT, 'ai_model'));
+if (!fs.existsSync(join(ROOT, 'ai_model'))) {
+    fs.mkdirSync(join(ROOT, 'ai_model'));
 }
 if (!fs.existsSync(join(ROOT, 'ai_model', AI_MODEL_NAME))) {
     try {
         const downloader = new Downloader({
             url: AI_MODEL_DOWNLOAD_URL,
-            directory: path.join(ROOT, 'ai_model'),
+            directory: join(ROOT, 'ai_model'),
             fileName: AI_MODEL_NAME,
             timeout: 90000,
         });

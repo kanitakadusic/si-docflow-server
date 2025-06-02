@@ -5,8 +5,11 @@
   "main": "src/server.ts",
   "scripts": {
     "build": "tsc",
-    "bootstrap": "node dist/config/env.js && node dist/config/bootstrap.js",
-    "start": "npm run bootstrap && node dist/server.js",
+    "vars": "node dist/config/env.js",
+    "bootstrap": "node dist/config/bootstrap.js",
+    "seed": "node dist/config/seed.js",
+    "serve": "node dist/server.js",
+    "start": "npm run vars && npm run bootstrap && npm run serve",
     "dev": "npm run build && npm run start"
   },
   "keywords": [],
@@ -35,6 +38,8 @@
     "sequelize": "^6.37.7",
     "sequelize-typescript": "^2.1.6",
     "sharp": "^0.34.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "tesseract.js": "^6.0.1",
     "url": "^0.11.4"
   },
@@ -46,6 +51,7 @@
     "@types/long": "^5.0.0",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.14.0",
+    "@types/swagger-ui-express": "^4.1.8",
     "@types/validator": "^13.12.3",
     "dotenv-safe": "^9.1.0",
     "eslint": "^9.23.0",

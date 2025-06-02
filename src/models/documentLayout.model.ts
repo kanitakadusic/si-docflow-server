@@ -10,6 +10,7 @@ import {
     NonAttribute,
     Sequelize,
 } from 'sequelize';
+
 import { DocumentType } from './documentType.model.js';
 import { LayoutImage } from './layoutImage.model.js';
 import { IField } from '../types/model.js';
@@ -19,7 +20,7 @@ export class DocumentLayout extends Model<InferAttributes<DocumentLayout>, Infer
     declare name: string;
     declare fields: string;
     declare image_id: ForeignKey<LayoutImage['id']>;
-    declare created_by: number;
+    declare created_by: number | null;
     declare updated_by: number | null;
 
     declare documentType?: NonAttribute<DocumentType>;
@@ -68,7 +69,7 @@ export class DocumentLayout extends Model<InferAttributes<DocumentLayout>, Infer
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 updated_by: {
                     type: DataTypes.INTEGER,

@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "title": "Local Storage Folder",
+    "description": "This record enables storing finalized documents for the corresponding document type.",
+    "is_active": true,
+    "path": "sample/"
+  }
+]

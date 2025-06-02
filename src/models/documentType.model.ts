@@ -10,22 +10,27 @@ import {
     NonAttribute,
     Sequelize,
 } from 'sequelize';
+
 import { DocumentLayout } from './documentLayout.model.js';
 import { ProcessingRule } from './processingRule.model.js';
+import { ProcessingRequestsBillingLog } from './processingRequestsBillingLog.model.js';
 
 export class DocumentType extends Model<InferAttributes<DocumentType>, InferCreationAttributes<DocumentType>> {
     declare id: CreationOptional<number>;
     declare name: string;
     declare description: string | null;
     declare document_layout_id: ForeignKey<DocumentLayout['id']>;
-    declare created_by: number;
+    declare created_by: number | null;
+    declare updated_by: number | null;
 
     declare documentLayout?: NonAttribute<DocumentLayout>;
     declare processingRules?: NonAttribute<ProcessingRule[]>;
+    declare processingRequestsBillingLogs?: NonAttribute<ProcessingRequestsBillingLog[]>;
 
     declare static associations: {
         documentLayout: Association<DocumentType, DocumentLayout>;
         processingRules: Association<DocumentType, ProcessingRule>;
+        processingRequestsBillingLogs: Association<DocumentType, ProcessingRequestsBillingLog>;
     };
 
     public static initialize(sequelize: Sequelize) {
@@ -39,7 +44,6 @@ export class DocumentType extends Model<InferAttributes<DocumentType>, InferCrea
                 name: {
                     type: DataTypes.TEXT,
                     allowNull: false,
-                    unique: true,
                 },
                 description: {
                     type: DataTypes.TEXT,
@@ -52,7 +56,11 @@ export class DocumentType extends Model<InferAttributes<DocumentType>, InferCrea
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
+                },
+                updated_by: {
+                    type: DataTypes.INTEGER,
+                    allowNull: true,
                 },
             },
             {
@@ -72,6 +80,11 @@ export class DocumentType extends Model<InferAttributes<DocumentType>, InferCrea
         this.hasMany(ProcessingRule, {
             foreignKey: 'document_type_id',
             as: 'processingRules',
+        });
+
+        this.hasMany(ProcessingRequestsBillingLog, {
+            foreignKey: 'document_type_id',
+            as: 'processingRequestsBillingLogs',
         });
     }
 

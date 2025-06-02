@@ -12,7 +12,7 @@ import { ExternalApiEndpoint } from '../models/externalApiEndpoint.model.js';
 import { ExternalFtpEndpoint } from '../models/externalFtpEndpoint.model.js';
 import { ProcessingRuleDestination } from '../models/processingRuleDestination.model.js';
 import { AiProvider } from '../models/aiProvider.model.js';
-import { ProcessingRequestBillingLog } from '../models/processingRequestsBillingLog.model.js';
+import { ProcessingRequestsBillingLog } from '../models/processingRequestsBillingLog.model.js';
 import { ProcessingResultsTriplet } from '../models/processingResultsTriplet.model.js';
 
 const sequelize: Sequelize = new Sequelize(DATABASE_URL, {
@@ -30,7 +30,7 @@ ExternalApiEndpoint.initialize(sequelize);
 ExternalFtpEndpoint.initialize(sequelize);
 ProcessingRuleDestination.initialize(sequelize);
 AiProvider.initialize(sequelize);
-ProcessingRequestBillingLog.initialize(sequelize);
+ProcessingRequestsBillingLog.initialize(sequelize);
 ProcessingResultsTriplet.initialize(sequelize);
 
 DocumentType.associate();
@@ -43,7 +43,7 @@ ExternalApiEndpoint.associate();
 ExternalFtpEndpoint.associate();
 ProcessingRuleDestination.associate();
 AiProvider.associate();
-ProcessingRequestBillingLog.associate();
+ProcessingRequestsBillingLog.associate();
 ProcessingResultsTriplet.associate();
 
 DocumentType.hook();
@@ -56,7 +56,7 @@ ExternalApiEndpoint.hook();
 ExternalFtpEndpoint.hook();
 ProcessingRuleDestination.hook();
 AiProvider.hook();
-ProcessingRequestBillingLog.hook();
+ProcessingRequestsBillingLog.hook();
 ProcessingResultsTriplet.hook();
 
 export {
@@ -71,6 +71,6 @@ export {
     ExternalFtpEndpoint,
     ProcessingRuleDestination,
     AiProvider,
-    ProcessingRequestBillingLog,
+    ProcessingRequestsBillingLog,
     ProcessingResultsTriplet,
 };
