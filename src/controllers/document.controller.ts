@@ -10,6 +10,7 @@ import {
     DocumentType,
     ExternalApiEndpoint,
     ExternalFtpEndpoint,
+    FinalizedDocument,
     LayoutImage,
     LocalStorageFolder,
     ProcessingRequestsBillingLog,
@@ -172,12 +173,12 @@ export class DocumentController {
                 res.status(400).json({ message: 'Data for finalization is missing' });
                 return;
             }
-            if (!json.document_type_id) {
-                res.status(400).json({ message: 'Document type has not been specified' });
+            if (json.document_type_id == null || json.engine == null || json.ocr == null || json.triplet_ids == null) {
+                res.status(400).json({ message: 'Invalid finalization data format' });
                 return;
             }
 
-            await this.logUserData(json.ocr as IMappedOcrResult[], json.triplet_ids);
+            await this.logUserData(json.ocr as IMappedOcrResult[], json.triplet_ids as number[]);
 
             const processingRules = await ProcessingRule.findAll({
                 where: { document_type_id: json.document_type_id },
@@ -207,7 +208,19 @@ export class DocumentController {
                 storages: [] as { id: number; is_sent: boolean }[],
                 apis: [] as { id: number; is_sent: boolean }[],
                 ftps: [] as { id: number; is_sent: boolean }[],
+                is_logged: false,
             };
+
+            if (processingRules.some((rule) => rule.log_result)) {
+                try {
+                    await FinalizedDocument.create({
+                        content: json,
+                    });
+                    logs.is_logged = true;
+                } catch (error) {
+                    console.error('Finalized document log failure:', error);
+                }
+            }
 
             for (const rule of processingRules) {
                 if (!rule.processingRuleDestinations) continue;
