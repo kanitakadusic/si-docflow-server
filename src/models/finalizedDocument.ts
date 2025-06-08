@@ -5,7 +5,7 @@ export class FinalizedDocument extends Model<
     InferCreationAttributes<FinalizedDocument>
 > {
     declare id: CreationOptional<number>;
-    declare content: string;
+    declare content: object;
 
     public static initialize(sequelize: Sequelize) {
         this.init(

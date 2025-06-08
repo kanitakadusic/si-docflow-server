@@ -26,3 +26,14 @@ export interface IOcrEngine {
     extractSingleField?: (crop: Buffer) => Promise<IOcrResult>;
     extractFieldsBatch?: (fieldsWithCrop: IFieldWithCrop[]) => Promise<IMappedOcrResultWithCrop[]>;
 }
+
+export interface IProcessResult {
+    engine: string;
+    ocr: IMappedOcrResult[];
+    triplet_ids: number[];
+}
+
+export interface IProcessResponse {
+    document_type_id: number;
+    process_results: IProcessResult[];
+}

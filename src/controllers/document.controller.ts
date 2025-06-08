@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { DocumentPreprocessorService } from '../services/documentPreprocessor.service.js';
 import { OcrService } from '../services/ocr.service.js';
 import { IField } from '../types/model.js';
-import { IMappedOcrResult, IMappedOcrResultWithCrop } from '../types/ocr.js';
+import { IMappedOcrResult, IMappedOcrResultWithCrop, IProcessResponse, IProcessResult } from '../types/ocr.js';
 import {
     AiProvider,
     DocumentLayout,
@@ -113,7 +113,7 @@ export class DocumentController {
             );
             const fields: IField[] = documentLayout.getFields();
 
-            const finalResults = [];
+            const finalResults: IProcessResult[] = [];
 
             for (const aiProvider of aiProviders) {
                 if (!aiProvider) {
@@ -138,7 +138,6 @@ export class DocumentController {
                 const tripletIds = await this.logImageAndAiData(resultsWithCrop, aiProvider.id);
 
                 finalResults.push({
-                    document_type_id: parseInt(documentTypeId, 10),
                     engine: aiProvider.dataValues.name,
                     ocr: resultsWithCrop.map(({ fieldWithCrop, result }) => ({
                         field: {
@@ -154,7 +153,10 @@ export class DocumentController {
             }
 
             res.status(200).json({
-                data: finalResults,
+                data: {
+                    document_type_id: parseInt(documentTypeId, 10),
+                    process_results: finalResults,
+                } as IProcessResponse,
                 message: 'Document has been successfully processed',
             });
         } catch (error) {
@@ -167,21 +169,17 @@ export class DocumentController {
 
     async finalize(req: Request, res: Response): Promise<void> {
         try {
-            const json = req.body;
+            const content: IProcessResponse = req.body;
 
-            if (!json) {
-                res.status(400).json({ message: 'Data for finalization is missing' });
-                return;
-            }
-            if (json.document_type_id == null || json.engine == null || json.ocr == null || json.triplet_ids == null) {
+            if (content.document_type_id == null || content.process_results == null) {
                 res.status(400).json({ message: 'Invalid finalization data format' });
                 return;
             }
 
-            await this.logUserData(json.ocr as IMappedOcrResult[], json.triplet_ids as number[]);
+            await this.logUserData(content.process_results);
 
             const processingRules = await ProcessingRule.findAll({
-                where: { document_type_id: json.document_type_id },
+                where: { document_type_id: content.document_type_id },
                 include: [
                     {
                         model: ProcessingRuleDestination,
@@ -213,12 +211,10 @@ export class DocumentController {
 
             if (processingRules.some((rule) => rule.log_result)) {
                 try {
-                    await FinalizedDocument.create({
-                        content: json,
-                    });
+                    await FinalizedDocument.create({ content });
                     logs.is_logged = true;
                 } catch (error) {
-                    console.error('Finalized document log failure:', error);
+                    console.error('Logging finalized document failed:', error);
                 }
             }
 
@@ -229,17 +225,17 @@ export class DocumentController {
                     if (destination.localStorageFolder) {
                         logs.storages.push({
                             id: destination.localStorageFolder.dataValues.id,
-                            is_sent: await destination.localStorageFolder.send(json),
+                            is_sent: await destination.localStorageFolder.send(content),
                         });
                     } else if (destination.externalApiEndpoint) {
                         logs.apis.push({
                             id: destination.externalApiEndpoint.dataValues.id,
-                            is_sent: await destination.externalApiEndpoint.send(json),
+                            is_sent: await destination.externalApiEndpoint.send(content),
                         });
                     } else if (destination.externalFtpEndpoint) {
                         logs.ftps.push({
                             id: destination.externalFtpEndpoint.dataValues.id,
-                            is_sent: await destination.externalFtpEndpoint.send(json),
+                            is_sent: await destination.externalFtpEndpoint.send(content),
                         });
                     }
                 }
@@ -271,16 +267,18 @@ export class DocumentController {
         return tripletIds;
     }
 
-    private async logUserData(results: IMappedOcrResult[], tripletIds: number[]) {
-        for (let i = 0; i < tripletIds.length; i++) {
-            await ProcessingResultsTriplet.update(
-                { user_data: results[i].result.text },
-                {
-                    where: {
-                        id: tripletIds[i],
+    private async logUserData(results: IProcessResult[]) {
+        for (const result of results) {
+            for (let i = 0; i < result.triplet_ids.length; i++) {
+                await ProcessingResultsTriplet.update(
+                    { user_data: result.ocr[i].result.text },
+                    {
+                        where: {
+                            id: result.triplet_ids[i],
+                        },
                     },
-                },
-            );
+                );
+            }
         }
     }
 }
