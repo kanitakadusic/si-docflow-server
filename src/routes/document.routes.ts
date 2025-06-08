@@ -28,16 +28,12 @@ const fileMiddleware = new FileMiddleware();
  *               file:
  *                 type: string
  *                 format: binary
- *                 description: "Supported extensions: .jpg .jpeg .png .pdf"
  *               user:
  *                 type: string
- *                 description: User submitting the document
  *               machineId:
  *                 type: string
- *                 description: IP address:port (e.g. 192.168.1.10:8080)
  *               documentTypeId:
  *                 type: integer
- *                 description: ID of the document type
  *             required:
  *               - file
  *               - user
@@ -61,61 +57,41 @@ const fileMiddleware = new FileMiddleware();
  *         description: Document has been successfully processed
  *         content:
  *           application/json:
- *             example:
- *               data:
- *                 - engine: googleVision
- *                   ocr:
- *                     - field:
- *                         name: "Address"
- *                         upper_left: [133.41, 155.22]
- *                         lower_right: [374.41, 176.22]
- *                         is_multiline: false
- *                       result:
- *                         text: "789 Oak Road"
- *                         confidence: 0.97
- *                         price: 0.00015
- *                   tripletIds: [133]
- *               message: Document has been successfully processed
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/ProcessResponse'
+ *                 message:
+ *                   type: string
  *       400:
- *         description: Bad request due to missing file or metadata
+ *         description: Invalid request
  *         content:
  *           application/json:
  *             examples:
  *               noFile:
- *                 summary: No file uploaded
- *                 value:
- *                   message: Document has not been uploaded
- *               missingMetadata:
- *                 summary: Missing required metadata
- *                 value:
- *                   message: Metadata (user, machine id, document type id) is missing
+ *                 value: { message: "Document has not been uploaded" }
+ *               noMetadata:
+ *                 value: { message: "Metadata (user, machine id, document type id) is missing" }
  *               noLang:
- *                 summary: Language query missing
- *                 value:
- *                   message: Language has not been specified
+ *                 value: { message: "Language has not been specified" }
  *               noEngines:
- *                 summary: Engines query missing
- *                 value:
- *                   message: Engines have not been specified
+ *                 value: { message: "Engines have not been specified" }
  *       404:
- *         description: Document type or layout not found
+ *         description: Document related records or OCR engines not found
  *         content:
  *           application/json:
  *             examples:
  *               typeNotFound:
- *                 summary: Document type not found
- *                 value:
- *                   message: Document type (123) is not available
+ *                 value: { message: "Document type (123) is not available" }
  *               layoutNotFound:
- *                 summary: Document layout not found
- *                 value:
- *                   message: Document layout for document type (123) is not available
+ *                 value: { message: "Document layout for document type (123) is not available" }
  *               imageNotFound:
- *                 summary: Layout image not found
- *                 value:
- *                   message: Layout image for document type (123) is not available
+ *                 value: { message: "Layout image for document type (123) is not available" }
+ *               enginesNotFound:
+ *                 value: { message: "Provided OCR engines are not supported" }
  *       500:
- *         description: Server error while processing document
+ *         description: Server error
  *         content:
  *           application/json:
  *             example:
@@ -147,61 +123,28 @@ router.post(
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               document_type_id:
- *                 type: integer
- *                 description: ID of the document type
- *               engine:
- *                 type: string
- *                 description: View POST /document/process
- *               ocr:
- *                 type: array
- *                 items:
- *                   type: object
- *                   description: View POST /document/process
- *               tripletIds:
- *                 type: array
- *                 items:
- *                   type: integer
- *                 description: View POST /document/process
- *             required:
- *               - document_type_id
- *               - engine
- *               - ocr
- *               - tripletIds
+ *             $ref: '#/components/schemas/ProcessResponse'
  *     responses:
  *       200:
  *         description: Document has been successfully finalized
  *         content:
  *           application/json:
- *             example:
- *               data:
- *                 storages:
- *                   - id: 1
- *                     is_sent: true
- *                 apis:
- *                   - id: 1
- *                     is_sent: true
- *                 ftps:
- *                   - id: 1
- *                     is_sent: false
- *               message: Document has been successfully finalized
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/FinalizeResponse'
+ *                 message:
+ *                   type: string
  *       400:
- *         description: Missing or invalid data in request
+ *         description: Invalid or missing request body
  *         content:
  *           application/json:
  *             examples:
- *               missingData:
- *                 summary: Missing document_type_id
- *                 value:
- *                   message: Document type has not been specified
- *               missingBody:
- *                 summary: Empty body
- *                 value:
- *                   message: Data for finalization is missing
+ *               invalidFormat:
+ *                 value: { message: "Invalid finalization data format" }
  *       500:
- *         description: Server error during finalization
+ *         description: Server error
  *         content:
  *           application/json:
  *             example:
@@ -215,3 +158,118 @@ router.post(
 );
 
 export default router;
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Field:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *         upper_left:
+ *           type: array
+ *           items:
+ *             type: number
+ *         lower_right:
+ *           type: array
+ *           items:
+ *             type: number
+ *         is_multiline:
+ *           type: boolean
+
+ *     OcrResult:
+ *       type: object
+ *       properties:
+ *         text:
+ *           type: string
+ *         confidence:
+ *           type: number
+ *         price:
+ *           type: number
+
+ *     MappedOcrResult:
+ *       type: object
+ *       properties:
+ *         field:
+ *           $ref: '#/components/schemas/Field'
+ *         result:
+ *           $ref: '#/components/schemas/OcrResult'
+
+ *     ProcessResult:
+ *       type: object
+ *       required:
+ *         - engine
+ *         - ocr
+ *         - triplet_ids
+ *       properties:
+ *         engine:
+ *           type: string
+ *         ocr:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/MappedOcrResult'
+ *         triplet_ids:
+ *           type: array
+ *           items:
+ *             type: integer
+
+ *     ProcessResponse:
+ *       type: object
+ *       properties:
+ *         document_type_id:
+ *           type: integer
+ *         process_results:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/ProcessResult'
+ *       example:
+ *         document_type_id: 1
+ *         process_results:
+ *           - engine: "googleVision"
+ *             ocr:
+ *               - field:
+ *                   name: "Address"
+ *                   upper_left: [133.41, 155.22]
+ *                   lower_right: [374.41, 176.22]
+ *                   is_multiline: false
+ *                 result:
+ *                   text: "789 Oak Road"
+ *                   confidence: 0.97
+ *                   price: 0.00015
+ *             triplet_ids: [1]
+
+ *     FinalizeResponse:
+ *       type: object
+ *       properties:
+ *         storages:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               is_sent:
+ *                 type: boolean
+ *         apis:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               is_sent:
+ *                 type: boolean
+ *         ftps:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               is_sent:
+ *                 type: boolean
+ *         is_logged:
+ *           type: boolean
+ */
