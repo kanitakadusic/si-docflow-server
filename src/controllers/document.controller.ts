@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { DocumentPreprocessorService } from '../services/documentPreprocessor.service.js';
 import { OcrService } from '../services/ocr.service.js';
 import { IField } from '../types/model.js';
-import { IMappedOcrResult, IMappedOcrResultFinalized, IMappedOcrResultWithCrop } from '../types/ocr.js';
+import { IMappedOcrResult, IMappedOcrResultWithCrop } from '../types/ocr.js';
 import {
     AiProvider,
     DocumentLayout,
@@ -137,6 +137,7 @@ export class DocumentController {
                 const tripletIds = await this.logImageAndAiData(resultsWithCrop, aiProvider.id);
 
                 finalResults.push({
+                    document_type_id: parseInt(documentTypeId, 10),
                     engine: aiProvider.dataValues.name,
                     ocr: resultsWithCrop.map(({ fieldWithCrop, result }) => ({
                         field: {
@@ -147,7 +148,7 @@ export class DocumentController {
                         },
                         result,
                     })) as IMappedOcrResult[],
-                    tripletIds,
+                    triplet_ids: tripletIds,
                 });
             }
 
@@ -176,7 +177,7 @@ export class DocumentController {
                 return;
             }
 
-            await this.logUserData(json.ocr as IMappedOcrResultFinalized[], json.tripletIds);
+            await this.logUserData(json.ocr as IMappedOcrResult[], json.triplet_ids);
 
             const processingRules = await ProcessingRule.findAll({
                 where: { document_type_id: json.document_type_id },
@@ -257,7 +258,7 @@ export class DocumentController {
         return tripletIds;
     }
 
-    private async logUserData(results: IMappedOcrResultFinalized[], tripletIds: number[]) {
+    private async logUserData(results: IMappedOcrResult[], tripletIds: number[]) {
         for (let i = 0; i < tripletIds.length; i++) {
             await ProcessingResultsTriplet.update(
                 { user_data: results[i].result.text },

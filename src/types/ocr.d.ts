@@ -26,12 +26,3 @@ export interface IOcrEngine {
     extractSingleField?: (crop: Buffer) => Promise<IOcrResult>;
     extractFieldsBatch?: (fieldsWithCrop: IFieldWithCrop[]) => Promise<IMappedOcrResultWithCrop[]>;
 }
-
-export interface IOcrResultFinalized extends IOcrResult {
-    isCorrected: boolean;
-}
-
-export interface IMappedOcrResultFinalized {
-    field: IField;
-    result: IOcrResultFinalized;
-}
