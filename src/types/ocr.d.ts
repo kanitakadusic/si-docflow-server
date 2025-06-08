@@ -27,11 +27,13 @@ export interface IOcrEngine {
     extractFieldsBatch?: (fieldsWithCrop: IFieldWithCrop[]) => Promise<IMappedOcrResultWithCrop[]>;
 }
 
-export interface IOcrResultFinalized extends IOcrResult {
-    isCorrected: boolean;
+export interface IProcessResult {
+    engine: string;
+    ocr: IMappedOcrResult[];
+    triplet_ids: number[];
 }
 
-export interface IMappedOcrResultFinalized {
-    field: IField;
-    result: IOcrResultFinalized;
+export interface IProcessResponse {
+    document_type_id: number;
+    process_results: IProcessResult[];
 }

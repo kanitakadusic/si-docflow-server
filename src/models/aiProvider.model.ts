@@ -40,9 +40,8 @@ export class AiProvider extends Model<InferAttributes<AiProvider>, InferCreation
             },
             {
                 sequelize,
-                modelName: 'AIProvider',
+                modelName: 'AiProvider',
                 tableName: 'ai_providers',
-                freezeTableName: true,
             },
         );
     }

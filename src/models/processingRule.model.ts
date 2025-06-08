@@ -19,6 +19,7 @@ export class ProcessingRule extends Model<InferAttributes<ProcessingRule>, Infer
     declare description: string | null;
     declare is_active: boolean;
     declare document_type_id: ForeignKey<DocumentType['id']>;
+    declare log_result: boolean;
     declare created_by: number | null;
     declare updated_by: number | null;
 
@@ -46,14 +47,19 @@ export class ProcessingRule extends Model<InferAttributes<ProcessingRule>, Infer
                     type: DataTypes.TEXT,
                     allowNull: true,
                 },
-                document_type_id: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
-                },
                 is_active: {
                     type: DataTypes.BOOLEAN,
                     allowNull: false,
                     defaultValue: true,
+                },
+                document_type_id: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                },
+                log_result: {
+                    type: DataTypes.BOOLEAN,
+                    allowNull: false,
+                    defaultValue: false,
                 },
                 created_by: {
                     type: DataTypes.INTEGER,
