@@ -4,6 +4,7 @@
     "title": "Processing Rule",
     "description": "This is a sample record.",
     "is_active": true,
-    "document_type_id": 1
+    "document_type_id": 1,
+    "log_result": true
   }
 ]

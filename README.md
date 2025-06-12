@@ -70,7 +70,7 @@ $ npm run dev
 ## Documentation 📚
 
 - [Environment Variables Setup](./documentation/env-setup.md)
-- [API documentation](https://si-docflow-server.up.railway.app/api-docs/)
+- [API documentation](https://docflow-server.up.railway.app/api-docs/)
 - [Questions and Answers](./documentation/q&a.md)
 
 ## Instructional Videos 🎥

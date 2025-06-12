@@ -55,6 +55,7 @@ export class ExternalFtpEndpoint
                 is_active: {
                     type: DataTypes.BOOLEAN,
                     allowNull: false,
+                    defaultValue: true,
                 },
                 host: {
                     type: DataTypes.TEXT,

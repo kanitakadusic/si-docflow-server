@@ -55,6 +55,7 @@ export class ExternalApiEndpoint
                 is_active: {
                     type: DataTypes.BOOLEAN,
                     allowNull: false,
+                    defaultValue: true,
                 },
                 method: {
                     type: DataTypes.TEXT,

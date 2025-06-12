@@ -14,6 +14,7 @@ import { ProcessingRuleDestination } from '../models/processingRuleDestination.m
 import { AiProvider } from '../models/aiProvider.model.js';
 import { ProcessingRequestsBillingLog } from '../models/processingRequestsBillingLog.model.js';
 import { ProcessingResultsTriplet } from '../models/processingResultsTriplet.model.js';
+import { FinalizedDocument } from '../models/finalizedDocument.js';
 
 const sequelize: Sequelize = new Sequelize(DATABASE_URL, {
     dialect: 'postgres',
@@ -32,6 +33,7 @@ ProcessingRuleDestination.initialize(sequelize);
 AiProvider.initialize(sequelize);
 ProcessingRequestsBillingLog.initialize(sequelize);
 ProcessingResultsTriplet.initialize(sequelize);
+FinalizedDocument.initialize(sequelize);
 
 DocumentType.associate();
 AccessRight.associate();
@@ -45,6 +47,7 @@ ProcessingRuleDestination.associate();
 AiProvider.associate();
 ProcessingRequestsBillingLog.associate();
 ProcessingResultsTriplet.associate();
+FinalizedDocument.associate();
 
 DocumentType.hook();
 AccessRight.hook();
@@ -58,6 +61,7 @@ ProcessingRuleDestination.hook();
 AiProvider.hook();
 ProcessingRequestsBillingLog.hook();
 ProcessingResultsTriplet.hook();
+FinalizedDocument.hook();
 
 export {
     sequelize,
@@ -73,4 +77,5 @@ export {
     AiProvider,
     ProcessingRequestsBillingLog,
     ProcessingResultsTriplet,
+    FinalizedDocument,
 };
